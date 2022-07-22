@@ -1,12 +1,89 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function App() {
 
-  const [values,] = useState([45, 5, 6, 65, 52, 82, 12, 24]);
+  // arrowRef
+  const arrowRef = useRef({ p1: null, p2: null })
+  const currentStep = useRef(0)
+  const countSorted = useRef(1)
+
+  const [sortCompleted, setSortCompleted] = useState(false);
+  const [values,] = useState([45, 5, 6, 65, 52, 82, 12, 100, 24]);
   //  setValues
+  const [sorted, setSorted] = useState([]);
+  //stores the index of selected item
+  const [selectedElements, setSelectedElements] = useState([]);
+
+
+  useEffect(() => {
+    setSorted(values)
+    // reset all other parameters
+    setSelectedElements([])
+    currentStep.current = 0
+    arrowRef.current = { p1: null, p2: null }
+  }, [values]);
+
+  function nextStep() {
+    // for bubble sort
+    if (currentStep.current === 0)
+      // select 2 elements
+      setSelectedElements(p => {
+        const first = !isNaN(p[0]) ? p[0] + 1 : 0;
+        currentStep.current = 1;
+        //validate the length of the array
+        if (first >= sorted.length - countSorted.current) {
+          // for sort completion
+          if (sorted.length - countSorted.current <= 0)
+            setSortCompleted(true)
+          countSorted.current += 1;
+          return [0, 1];
+        }
+        return [first, first + 1];
+      });
+    // if first element is greater than second element
+    else if (currentStep.current === 1) {
+      if (sorted[selectedElements[0]] > sorted[selectedElements[1]]) {
+        arrowRef.current.p1.style.backgroundColor = "red";
+        arrowRef.current.p2.style.backgroundColor = "red";
+        currentStep.current = 2;
+      }
+      else {
+        currentStep.current = 0;
+        nextStep()
+      }
+    }
+    // swap them
+    else if (currentStep.current === 2) {
+      setSorted(p => {
+        const newList = [...p];
+        const temp = newList[selectedElements[0]];
+        newList[selectedElements[0]] = newList[selectedElements[1]];
+        newList[selectedElements[1]] = temp;
+        currentStep.current = 0;
+        // reset the selected elements style to default
+        arrowRef.current.p1.style.backgroundColor = "#38CC77";
+        arrowRef.current.p2.style.backgroundColor = "#38CC77";
+        // console.log(newList);
+        return newList;
+      })
+    }
+    // else
+    // do nothing
+    // repeat for next 2 elements
+  }
 
   return (
     <div className="app bg-[#242B2E] overflow-auto w-full h-screen ">
+      {sortCompleted && <div className="onCompletion fixed left-0 top-0 w-full h-full bg-[#0000004D] flex items-center justify-center ">
+        <div className="message rounded-[50px] bg-[#6A1B4D] py-8 px-12 flex flex-col text-center justify-center items-center [&>*]:mb-4 ">
+          <h1 className=" font-bold text-4xl text-white ">Hurry ! Array has sorted successfully</h1>
+          <svg width="130" height="130" viewBox="0 0 130 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M115.781 71.0937C111.719 91.4062 96.4032 110.532 74.9126 114.806C64.4312 116.894 53.5585 115.621 43.8426 111.169C34.1266 106.718 26.0628 99.3146 20.7992 90.0135C15.5356 80.7125 13.3406 69.9878 14.5268 59.3667C15.713 48.7456 20.2199 38.7695 27.4057 30.8587C42.1444 14.625 67.0313 10.1562 87.3438 18.2812" stroke="#66AD47" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M46.7188 62.9688L67.0312 83.2812L115.781 30.4688" stroke="#66AD47" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <div onClick={() => setSortCompleted(false)} className="btn bg-[#FF6666] text-white text-[1.5rem] px-5 py-2 cursor-pointer transition-all font-bold rounded-xl active:scale-110 ">Done</div>
+        </div>
+      </div>}
       <div className="head h-[5rem] flex flex-row justify-around items-center ">
         <div className="left"><h1 className="text-[2rem] bold text-white" >Values</h1></div>
         <div className="right text-white grid grid-flow-col gap-5">
@@ -16,7 +93,7 @@ function App() {
           </div>
           <div className="grid grid-flow-col gap-2">
             <label htmlFor="ascOrder">
-              <input type="radio" checked id="ascOrder" />
+              <input type="radio" defaultChecked id="ascOrder" />
               Ascending
             </label>
             <label htmlFor="descOrder">
@@ -27,38 +104,46 @@ function App() {
         </div>
       </div>
       <div className="body h-[calc(100%_-_5rem)]  grid grid-flow-col">
-        <div className="values  p-2 pl-8 text-white">
+        <div className="values p-2 px-10 text-white">
           <div className="content">
             {values.map((value, index) => <div key={index} style={{ width: `${value}%` }} className="value px-2 py-1 bg-[#E03B8B] rounded-r text-[1.5rem]  my-3">{value}</div>)}
           </div>
           <div className="footer mt-12 grid grid-flow-col justify-center gap-2">
             <input type="text" className=" rounded min-w-[2rem] max-w-[5rem] w-fit border border-solid border-white   bg-[#6A1B4D]" />
             <svg width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path fill-rule="evenodd" clip-rule="evenodd" d="M30 2.5C14.8125 2.5 2.5 14.8125 2.5 30C2.5 45.1875 14.8125 57.5 30 57.5C45.1875 57.5 57.5 45.1875 57.5 30C57.5 14.8125 45.1875 2.5 30 2.5ZM32.5 40C32.5 40.663 32.2366 41.2989 31.7678 41.7678C31.2989 42.2366 30.663 42.5 30 42.5C29.337 42.5 28.7011 42.2366 28.2322 41.7678C27.7634 41.2989 27.5 40.663 27.5 40V32.5H20C19.337 32.5 18.7011 32.2366 18.2322 31.7678C17.7634 31.2989 17.5 30.663 17.5 30C17.5 29.337 17.7634 28.7011 18.2322 28.2322C18.7011 27.7634 19.337 27.5 20 27.5H27.5V20C27.5 19.337 27.7634 18.7011 28.2322 18.2322C28.7011 17.7634 29.337 17.5 30 17.5C30.663 17.5 31.2989 17.7634 31.7678 18.2322C32.2366 18.7011 32.5 19.337 32.5 20V27.5H40C40.663 27.5 41.2989 27.7634 41.7678 28.2322C42.2366 28.7011 42.5 29.337 42.5 30C42.5 30.663 42.2366 31.2989 41.7678 31.7678C41.2989 32.2366 40.663 32.5 40 32.5H32.5V40Z" fill="white" />
+              <path fillRule="evenodd" clipRule="evenodd" d="M30 2.5C14.8125 2.5 2.5 14.8125 2.5 30C2.5 45.1875 14.8125 57.5 30 57.5C45.1875 57.5 57.5 45.1875 57.5 30C57.5 14.8125 45.1875 2.5 30 2.5ZM32.5 40C32.5 40.663 32.2366 41.2989 31.7678 41.7678C31.2989 42.2366 30.663 42.5 30 42.5C29.337 42.5 28.7011 42.2366 28.2322 41.7678C27.7634 41.2989 27.5 40.663 27.5 40V32.5H20C19.337 32.5 18.7011 32.2366 18.2322 31.7678C17.7634 31.2989 17.5 30.663 17.5 30C17.5 29.337 17.7634 28.7011 18.2322 28.2322C18.7011 27.7634 19.337 27.5 20 27.5H27.5V20C27.5 19.337 27.7634 18.7011 28.2322 18.2322C28.7011 17.7634 29.337 17.5 30 17.5C30.663 17.5 31.2989 17.7634 31.7678 18.2322C32.2366 18.7011 32.5 19.337 32.5 20V27.5H40C40.663 27.5 41.2989 27.7634 41.7678 28.2322C42.2366 28.7011 42.5 29.337 42.5 30C42.5 30.663 42.2366 31.2989 41.7678 31.7678C41.2989 32.2366 40.663 32.5 40 32.5H32.5V40Z" fill="white" />
             </svg>
           </div>
         </div>
-        <div className="pageRender  p-2 pl-8 text-white">
-          <div className="content">{values.sort((a, b) => a - b).map((value, index) => <div key={index} style={{ width: `${value}%` }} className="value px-2 py-1 bg-[#E03B8B] rounded-r text-[1.5rem]  my-3">{value}</div>)}</div>
+        <div className="pageRender  p-2 px-10 text-white">
+
+          <div className="content">{sorted.map((value, index) => <div key={index} style={{ width: `${value}%`, backgroundColor: `${(() => { console.log(index, selectedElements.includes(index)); return selectedElements.includes(index) ? "#38CC77" : "" })()}` }} ref={r => {
+            const eleSelectedIndex = selectedElements.indexOf(index)
+            if (eleSelectedIndex == 0)
+              arrowRef.current.p1 = r;
+            else if (eleSelectedIndex == 1)
+              arrowRef.current.p2 = r;
+          }} className="value px-2 py-1 select-none bg-[#E03B8B] rounded-r text-[1.5rem]  my-3">{value}</div>)}</div>
+
           <div className="footer mt-12 grid grid-flow-col justify-evenly ">
-            <svg width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path fill-rule="evenodd" clip-rule="evenodd" d="M30 2.5C14.8125 2.5 2.5 14.8125 2.5 30C2.5 45.1875 14.8125 57.5 30 57.5C45.1875 57.5 57.5 45.1875 57.5 30C57.5 14.8125 45.1875 2.5 30 2.5ZM35 22C35.0041 21.6452 34.9148 21.2956 34.741 20.9862C34.5672 20.6768 34.3151 20.4186 34.01 20.2375C33.7136 20.067 33.3742 19.9857 33.0327 20.0034C32.6912 20.0212 32.3621 20.1372 32.085 20.3375L20.835 28.3375C20.5738 28.5284 20.3619 28.7788 20.2167 29.0679C20.0715 29.357 19.9972 29.6765 20 30C20 30.67 20.3125 31.2925 20.835 31.665L32.085 39.665C32.3621 39.8653 32.6912 39.9813 33.0327 39.9991C33.3742 40.0168 33.7136 39.9355 34.01 39.765C34.3155 39.5837 34.5678 39.3251 34.7416 39.0152C34.9154 38.7054 35.0045 38.3552 35 38V22Z" fill="white" />
+            <svg className="cursor-pointer active:scale-110 transition-all " width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fillRule="evenodd" clipRule="evenodd" d="M30 2.5C14.8125 2.5 2.5 14.8125 2.5 30C2.5 45.1875 14.8125 57.5 30 57.5C45.1875 57.5 57.5 45.1875 57.5 30C57.5 14.8125 45.1875 2.5 30 2.5ZM35 22C35.0041 21.6452 34.9148 21.2956 34.741 20.9862C34.5672 20.6768 34.3151 20.4186 34.01 20.2375C33.7136 20.067 33.3742 19.9857 33.0327 20.0034C32.6912 20.0212 32.3621 20.1372 32.085 20.3375L20.835 28.3375C20.5738 28.5284 20.3619 28.7788 20.2167 29.0679C20.0715 29.357 19.9972 29.6765 20 30C20 30.67 20.3125 31.2925 20.835 31.665L32.085 39.665C32.3621 39.8653 32.6912 39.9813 33.0327 39.9991C33.3742 40.0168 33.7136 39.9355 34.01 39.765C34.3155 39.5837 34.5678 39.3251 34.7416 39.0152C34.9154 38.7054 35.0045 38.3552 35 38V22Z" fill="white" />
             </svg>
 
-            <svg width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg className="cursor-pointer active:scale-110 transition-all " width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect width="60" height="60" rx="30" fill="white" />
               <path d="M30 3.75C15.5039 3.75 3.75 15.5039 3.75 30C3.75 44.4961 15.5039 56.25 30 56.25C44.4961 56.25 56.25 44.4961 56.25 30C56.25 15.5039 44.4961 3.75 30 3.75ZM38.4434 30.4043L25.6465 39.7148C25.5763 39.7653 25.4936 39.7954 25.4075 39.8018C25.3213 39.8083 25.2351 39.7909 25.1582 39.7515C25.0813 39.7122 25.0167 39.6524 24.9716 39.5787C24.9264 39.5051 24.9025 39.4204 24.9023 39.334V20.7246C24.9021 20.638 24.9258 20.5531 24.9708 20.4792C25.0158 20.4052 25.0805 20.3452 25.1575 20.3058C25.2346 20.2664 25.3211 20.249 25.4074 20.2557C25.4937 20.2624 25.5764 20.2929 25.6465 20.3438L38.4434 29.6484C38.5038 29.6912 38.5531 29.7478 38.5872 29.8136C38.6212 29.8794 38.639 29.9523 38.639 30.0264C38.639 30.1004 38.6212 30.1734 38.5872 30.2391C38.5531 30.3049 38.5038 30.3615 38.4434 30.4043Z" fill="black" />
               <path d="M30 3.75C15.5039 3.75 3.75 15.5039 3.75 30C3.75 44.4961 15.5039 56.25 30 56.25C44.4961 56.25 56.25 44.4961 56.25 30C56.25 15.5039 44.4961 3.75 30 3.75ZM38.4434 30.4043L25.6465 39.7148C25.5763 39.7653 25.4936 39.7954 25.4075 39.8018C25.3213 39.8083 25.2351 39.7909 25.1582 39.7515C25.0813 39.7122 25.0167 39.6524 24.9716 39.5787C24.9264 39.5051 24.9025 39.4204 24.9023 39.334V20.7246C24.9021 20.638 24.9258 20.5531 24.9708 20.4792C25.0158 20.4052 25.0805 20.3452 25.1575 20.3058C25.2346 20.2664 25.3211 20.249 25.4074 20.2557C25.4937 20.2624 25.5764 20.2929 25.6465 20.3438L38.4434 29.6484C38.5038 29.6912 38.5531 29.7478 38.5872 29.8136C38.6212 29.8794 38.639 29.9523 38.639 30.0264C38.639 30.1004 38.6212 30.1734 38.5872 30.2391C38.5531 30.3049 38.5038 30.3615 38.4434 30.4043Z" stroke="white" />
             </svg>
 
-            <svg width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path fill-rule="evenodd" clip-rule="evenodd" d="M30 2.5C14.8125 2.5 2.5 14.8125 2.5 30C2.5 45.1875 14.8125 57.5 30 57.5C45.1875 57.5 57.5 45.1875 57.5 30C57.5 14.8125 45.1875 2.5 30 2.5ZM25 22C25 21.2625 25.38 20.585 25.99 20.2375C26.2864 20.067 26.6258 19.9857 26.9673 20.0034C27.3088 20.0212 27.6379 20.1372 27.915 20.3375L39.165 28.3375C39.4262 28.5284 39.6381 28.7788 39.7833 29.0679C39.9285 29.357 40.0028 29.6765 40 30C40.0032 30.3239 39.9291 30.6439 39.7839 30.9335C39.6387 31.2231 39.4265 31.4738 39.165 31.665L27.915 39.665C27.6379 39.8653 27.3088 39.9813 26.9673 39.9991C26.6258 40.0168 26.2864 39.9355 25.99 39.765C25.6845 39.5837 25.4322 39.3251 25.2584 39.0152C25.0846 38.7054 24.9955 38.3552 25 38V22Z" fill="white" />
+            <svg className="cursor-pointer active:scale-110 transition-all " onClick={nextStep} width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fillRule="evenodd" clipRule="evenodd" d="M30 2.5C14.8125 2.5 2.5 14.8125 2.5 30C2.5 45.1875 14.8125 57.5 30 57.5C45.1875 57.5 57.5 45.1875 57.5 30C57.5 14.8125 45.1875 2.5 30 2.5ZM25 22C25 21.2625 25.38 20.585 25.99 20.2375C26.2864 20.067 26.6258 19.9857 26.9673 20.0034C27.3088 20.0212 27.6379 20.1372 27.915 20.3375L39.165 28.3375C39.4262 28.5284 39.6381 28.7788 39.7833 29.0679C39.9285 29.357 40.0028 29.6765 40 30C40.0032 30.3239 39.9291 30.6439 39.7839 30.9335C39.6387 31.2231 39.4265 31.4738 39.165 31.665L27.915 39.665C27.6379 39.8653 27.3088 39.9813 26.9673 39.9991C26.6258 40.0168 26.2864 39.9355 25.99 39.765C25.6845 39.5837 25.4322 39.3251 25.2584 39.0152C25.0846 38.7054 24.9955 38.3552 25 38V22Z" fill="white" />
             </svg>
 
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 }
 

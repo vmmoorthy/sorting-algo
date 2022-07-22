@@ -6,13 +6,14 @@ function App() {
   const arrowRef = useRef({ p1: null, p2: null })
   const currentStep = useRef(0)
   const countSorted = useRef(1)
+  const inputRef = useRef(null)
 
   const [sortCompleted, setSortCompleted] = useState(false);
-  const [values,] = useState([45, 5, 6, 65, 52, 82, 12, 100, 24]);
-  //  setValues
+  const [values, setValues] = useState([45, 5, 6, 65, 52, 82, 12, 100, 24]);
   const [sorted, setSorted] = useState([]);
   //stores the index of selected item
   const [selectedElements, setSelectedElements] = useState([]);
+  const [isAsc, setIsAsc] = useState(true);
 
 
   useEffect(() => {
@@ -20,8 +21,10 @@ function App() {
     // reset all other parameters
     setSelectedElements([])
     currentStep.current = 0
+    countSorted.current = 1
     arrowRef.current = { p1: null, p2: null }
-  }, [values]);
+    setSortCompleted(false)
+  }, [values, isAsc]);
 
   function nextStep() {
     // for bubble sort
@@ -33,18 +36,17 @@ function App() {
         //validate the length of the array
         if (first >= sorted.length - countSorted.current) {
           // for sort completion
-          if (sorted.length - countSorted.current <= 0)
-            setSortCompleted(true)
-          countSorted.current += 1;
+          if (sorted.length - countSorted.current <= 0) { countSorted.current = sorted.length + 1; setSortCompleted(true); setSelectedElements([]) }
+          else countSorted.current += 1;
           return [0, 1];
         }
         return [first, first + 1];
       });
     // if first element is greater than second element
     else if (currentStep.current === 1) {
-      if (sorted[selectedElements[0]] > sorted[selectedElements[1]]) {
-        arrowRef.current.p1.style.backgroundColor = "red";
-        arrowRef.current.p2.style.backgroundColor = "red";
+      if (isAsc ? sorted[selectedElements[0]] > sorted[selectedElements[1]] : sorted[selectedElements[0]] < sorted[selectedElements[1]]) {
+        arrowRef.current.p1.style.backgroundColor = "#E21717";
+        arrowRef.current.p2.style.backgroundColor = "#E21717";
         currentStep.current = 2;
       }
       else {
@@ -63,13 +65,17 @@ function App() {
         // reset the selected elements style to default
         arrowRef.current.p1.style.backgroundColor = "#38CC77";
         arrowRef.current.p2.style.backgroundColor = "#38CC77";
-        // console.log(newList);
         return newList;
       })
     }
-    // else
-    // do nothing
-    // repeat for next 2 elements
+  }
+
+  const addElement = () => {
+    const val = inputRef.current.value
+    if (val === "") return;
+    setValues(p => [...p, val])
+    inputRef.current.value = ""
+    inputRef.current.focus()
   }
 
   return (
@@ -93,39 +99,40 @@ function App() {
           </div>
           <div className="grid grid-flow-col gap-2">
             <label htmlFor="ascOrder">
-              <input type="radio" defaultChecked id="ascOrder" />
+              <input type="radio" onChange={() => setIsAsc(true)} name="order" defaultChecked id="ascOrder" />
               Ascending
             </label>
             <label htmlFor="descOrder">
-              <input type="radio" id="descOrder" />
+              <input type="radio" onChange={() => setIsAsc(false)} name="order" id="descOrder" />
               Descending
             </label>
           </div>
         </div>
       </div>
       <div className="body h-[calc(100%_-_5rem)]  grid grid-flow-col">
-        <div className="values p-2 px-10 text-white">
-          <div className="content">
+        <div className="values h-full p-2 px-10 text-white">
+          <div className="content max-h-[75vh] overflow-auto ">
             {values.map((value, index) => <div key={index} style={{ width: `${value}%` }} className="value px-2 py-1 bg-[#E03B8B] rounded-r text-[1.5rem]  my-3">{value}</div>)}
           </div>
-          <div className="footer mt-12 grid grid-flow-col justify-center gap-2">
-            <input type="text" className=" rounded min-w-[2rem] max-w-[5rem] w-fit border border-solid border-white   bg-[#6A1B4D]" />
-            <svg width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <div className="footer mt-5 grid grid-flow-col justify-center gap-2">
+            <input type="text" onKeyDown={e => e.key === "Enter" && addElement()} ref={r => inputRef.current = r} className=" rounded min-w-[2rem] max-w-[5rem] w-fit border border-solid border-white   bg-[#6A1B4D]" />
+            <svg onClick={addElement} className="active:scale-110 transition-all" width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path fillRule="evenodd" clipRule="evenodd" d="M30 2.5C14.8125 2.5 2.5 14.8125 2.5 30C2.5 45.1875 14.8125 57.5 30 57.5C45.1875 57.5 57.5 45.1875 57.5 30C57.5 14.8125 45.1875 2.5 30 2.5ZM32.5 40C32.5 40.663 32.2366 41.2989 31.7678 41.7678C31.2989 42.2366 30.663 42.5 30 42.5C29.337 42.5 28.7011 42.2366 28.2322 41.7678C27.7634 41.2989 27.5 40.663 27.5 40V32.5H20C19.337 32.5 18.7011 32.2366 18.2322 31.7678C17.7634 31.2989 17.5 30.663 17.5 30C17.5 29.337 17.7634 28.7011 18.2322 28.2322C18.7011 27.7634 19.337 27.5 20 27.5H27.5V20C27.5 19.337 27.7634 18.7011 28.2322 18.2322C28.7011 17.7634 29.337 17.5 30 17.5C30.663 17.5 31.2989 17.7634 31.7678 18.2322C32.2366 18.7011 32.5 19.337 32.5 20V27.5H40C40.663 27.5 41.2989 27.7634 41.7678 28.2322C42.2366 28.7011 42.5 29.337 42.5 30C42.5 30.663 42.2366 31.2989 41.7678 31.7678C41.2989 32.2366 40.663 32.5 40 32.5H32.5V40Z" fill="white" />
             </svg>
           </div>
         </div>
-        <div className="pageRender  p-2 px-10 text-white">
+        <div className="pageRender  h-full p-2 px-10 text-white">
 
-          <div className="content">{sorted.map((value, index) => <div key={index} style={{ width: `${value}%`, backgroundColor: `${(() => { console.log(index, selectedElements.includes(index)); return selectedElements.includes(index) ? "#38CC77" : "" })()}` }} ref={r => {
+          <div className="content max-h-[75vh] overflow-auto ">{sorted.map((value, index) => <div key={index} style={{ width: `${value}%`, backgroundColor: `${selectedElements.includes(index) ? "#38CC77" : (sorted.length - countSorted.current < index ? "#5A20CB" : "")}` }} ref={r => {
             const eleSelectedIndex = selectedElements.indexOf(index)
-            if (eleSelectedIndex == 0)
+            if (eleSelectedIndex === 0)
               arrowRef.current.p1 = r;
-            else if (eleSelectedIndex == 1)
-              arrowRef.current.p2 = r;
+            else if (eleSelectedIndex === 1) {
+              arrowRef.current.p2 = r; r?.scrollIntoView({ behavior: "smooth", block: "center" })
+            }
           }} className="value px-2 py-1 select-none bg-[#E03B8B] rounded-r text-[1.5rem]  my-3">{value}</div>)}</div>
 
-          <div className="footer mt-12 grid grid-flow-col justify-evenly ">
+          <div className="footer mt-5 grid grid-flow-col justify-evenly ">
             <svg className="cursor-pointer active:scale-110 transition-all " width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path fillRule="evenodd" clipRule="evenodd" d="M30 2.5C14.8125 2.5 2.5 14.8125 2.5 30C2.5 45.1875 14.8125 57.5 30 57.5C45.1875 57.5 57.5 45.1875 57.5 30C57.5 14.8125 45.1875 2.5 30 2.5ZM35 22C35.0041 21.6452 34.9148 21.2956 34.741 20.9862C34.5672 20.6768 34.3151 20.4186 34.01 20.2375C33.7136 20.067 33.3742 19.9857 33.0327 20.0034C32.6912 20.0212 32.3621 20.1372 32.085 20.3375L20.835 28.3375C20.5738 28.5284 20.3619 28.7788 20.2167 29.0679C20.0715 29.357 19.9972 29.6765 20 30C20 30.67 20.3125 31.2925 20.835 31.665L32.085 39.665C32.3621 39.8653 32.6912 39.9813 33.0327 39.9991C33.3742 40.0168 33.7136 39.9355 34.01 39.765C34.3155 39.5837 34.5678 39.3251 34.7416 39.0152C34.9154 38.7054 35.0045 38.3552 35 38V22Z" fill="white" />
             </svg>

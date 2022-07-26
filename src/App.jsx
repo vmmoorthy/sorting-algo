@@ -9,15 +9,16 @@ function App() {
   const inputRef = useRef(null)
 
   const [sortCompleted, setSortCompleted] = useState(false);
-  const [values, setValues] = useState([45, 5, 6, 65, 52, 82, 12, 2, 100, 24]);
+  const [values, setValues] = useState([45, 5, 6, 65, 52, 82, 12, 2, 101, 100, 24]);
   const [sorted, setSorted] = useState([]);
   //stores the index of selected item
   const [selectedElements, setSelectedElements] = useState([]);
   const [isAsc, setIsAsc] = useState(true);
-  const [algo, setAlgo] = useState("Selection");
+  const [algo, setAlgo] = useState("Insertion");
+  const insertionPointer = useRef(0)
 
   useEffect(() => {
-    setSorted(values)
+    setSorted([...values])
     // reset all other parameters
     setSelectedElements([])
     currentStep.current = 0
@@ -27,45 +28,44 @@ function App() {
   }, [values, isAsc, algo]);
 
   function nextStep_Insertion() {
-    // for bubble sort
-    if (currentStep.current === 0)
-      // select 2 elements
-      setSelectedElements(p => {
-        const first = !isNaN(p[0]) ? p[0] + 1 : 0;
-        currentStep.current = 1;
-        //validate the length of the array
-        if (first >= sorted.length - countSorted.current) {
-          // for sort completion
-          if (sorted.length - countSorted.current <= 0) { countSorted.current = sorted.length + 1; setSortCompleted(true); setSelectedElements([]) }
-          else countSorted.current += 1;
-          return [0, 1];
-        }
-        return [first, first + 1];
-      });
-    // if first element is greater than second element, mark for swap otherwise getting select next 2 elements
-    else if (currentStep.current === 1) {
-      if (isAsc ? sorted[selectedElements[0]] > sorted[selectedElements[1]] : sorted[selectedElements[0]] < sorted[selectedElements[1]]) {
-        arrowRef.current.p1.style.backgroundColor = "#E21717";
-        arrowRef.current.p2.style.backgroundColor = "#E21717";
-        currentStep.current = 2;
+    if (currentStep.current == 0) {
+      setSelectedElements([0, 1]) //[previous,base]
+      currentStep.current = 1
+    }
+    else if (currentStep.current == 1) {
+      if (sorted[selectedElements[1]] < sorted[selectedElements[0]]) {
+        if (selectedElements[0] - 1 >= 0 && sorted[selectedElements[0] - 1] > sorted[selectedElements[1]])
+          setSelectedElements(p => [p[0] - 1, p[1]])
+        else
+          currentStep.current = 2
       }
       else {
-        currentStep.current = 0;
-        nextStep_Bubble()
+        countSorted.current += 1
+        setSelectedElements(p => {
+          if (p[1] >= sorted.length)
+            setSortCompleted(true)
+          return [p[1], p[1] + 1]
+        })
       }
     }
-    // swap them
-    else if (currentStep.current === 2) {
-      setSorted(p => {
-        const newList = [...p];
-        const temp = newList[selectedElements[0]];
-        newList[selectedElements[0]] = newList[selectedElements[1]];
-        newList[selectedElements[1]] = temp;
-        currentStep.current = 0;
-        // reset the selected elements style to default
-        arrowRef.current.p1.style.backgroundColor = "#38CC77";
-        arrowRef.current.p2.style.backgroundColor = "#38CC77";
-        return newList;
+    else if (currentStep.current == 2) {
+      setSorted(pre => {
+        const p = [...pre]
+        // remove base value
+        const [baseValue] = p.splice(selectedElements[1], 1)
+        // add base value to appropriate position
+        p.splice(selectedElements[0], 0, baseValue)
+        return p
+      })
+      // increase sorted count
+      countSorted.current += 1
+      // move to step 1
+      currentStep.current = 1
+      // move selection 
+      setSelectedElements(p => {
+        if (p[1] >= sorted.length)
+          setSortCompleted(true)
+        return [p[1], p[1] + 1]
       })
     }
   }
@@ -191,9 +191,9 @@ function App() {
         else
           return ""
       }
-      else if (algo === "Selection") {
+      else if (algo === "Selection" || algo === "Insertion") {
         if (countSorted.current - 1 > index)
-          return "#5A20CB";
+          return algo === "Selection" ? "#5A20CB" : "#F7CD2E";
         else
           return ""
       }
@@ -243,7 +243,7 @@ function App() {
           </div>
           <div className="footer mt-5 grid grid-flow-col justify-center gap-2">
             <input type="text" onKeyDown={e => e.key === "Enter" && addElement()} ref={r => inputRef.current = r} className=" rounded min-w-[2rem] max-w-[5rem] w-fit border border-solid border-white p-1  bg-[#6A1B4D]" />
-            <svg onClick={addElement} className="active:scale-110 transition-all" width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg onClick={addElement} className="active:scale-110 cursor-pointer transition-all" width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path fillRule="evenodd" clipRule="evenodd" d="M30 2.5C14.8125 2.5 2.5 14.8125 2.5 30C2.5 45.1875 14.8125 57.5 30 57.5C45.1875 57.5 57.5 45.1875 57.5 30C57.5 14.8125 45.1875 2.5 30 2.5ZM32.5 40C32.5 40.663 32.2366 41.2989 31.7678 41.7678C31.2989 42.2366 30.663 42.5 30 42.5C29.337 42.5 28.7011 42.2366 28.2322 41.7678C27.7634 41.2989 27.5 40.663 27.5 40V32.5H20C19.337 32.5 18.7011 32.2366 18.2322 31.7678C17.7634 31.2989 17.5 30.663 17.5 30C17.5 29.337 17.7634 28.7011 18.2322 28.2322C18.7011 27.7634 19.337 27.5 20 27.5H27.5V20C27.5 19.337 27.7634 18.7011 28.2322 18.2322C28.7011 17.7634 29.337 17.5 30 17.5C30.663 17.5 31.2989 17.7634 31.7678 18.2322C32.2366 18.7011 32.5 19.337 32.5 20V27.5H40C40.663 27.5 41.2989 27.7634 41.7678 28.2322C42.2366 28.7011 42.5 29.337 42.5 30C42.5 30.663 42.2366 31.2989 41.7678 31.7678C41.2989 32.2366 40.663 32.5 40 32.5H32.5V40Z" fill="white" />
             </svg>
           </div>
@@ -265,11 +265,13 @@ function App() {
               <path fillRule="evenodd" clipRule="evenodd" d="M30 2.5C14.8125 2.5 2.5 14.8125 2.5 30C2.5 45.1875 14.8125 57.5 30 57.5C45.1875 57.5 57.5 45.1875 57.5 30C57.5 14.8125 45.1875 2.5 30 2.5ZM35 22C35.0041 21.6452 34.9148 21.2956 34.741 20.9862C34.5672 20.6768 34.3151 20.4186 34.01 20.2375C33.7136 20.067 33.3742 19.9857 33.0327 20.0034C32.6912 20.0212 32.3621 20.1372 32.085 20.3375L20.835 28.3375C20.5738 28.5284 20.3619 28.7788 20.2167 29.0679C20.0715 29.357 19.9972 29.6765 20 30C20 30.67 20.3125 31.2925 20.835 31.665L32.085 39.665C32.3621 39.8653 32.6912 39.9813 33.0327 39.9991C33.3742 40.0168 33.7136 39.9355 34.01 39.765C34.3155 39.5837 34.5678 39.3251 34.7416 39.0152C34.9154 38.7054 35.0045 38.3552 35 38V22Z" fill="white" />
             </svg> */}
 
-            <svg className="cursor-pointer active:scale-110 transition-all " width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="60" height="60" rx="30" fill="white" />
-              <path d="M30 3.75C15.5039 3.75 3.75 15.5039 3.75 30C3.75 44.4961 15.5039 56.25 30 56.25C44.4961 56.25 56.25 44.4961 56.25 30C56.25 15.5039 44.4961 3.75 30 3.75ZM38.4434 30.4043L25.6465 39.7148C25.5763 39.7653 25.4936 39.7954 25.4075 39.8018C25.3213 39.8083 25.2351 39.7909 25.1582 39.7515C25.0813 39.7122 25.0167 39.6524 24.9716 39.5787C24.9264 39.5051 24.9025 39.4204 24.9023 39.334V20.7246C24.9021 20.638 24.9258 20.5531 24.9708 20.4792C25.0158 20.4052 25.0805 20.3452 25.1575 20.3058C25.2346 20.2664 25.3211 20.249 25.4074 20.2557C25.4937 20.2624 25.5764 20.2929 25.6465 20.3438L38.4434 29.6484C38.5038 29.6912 38.5531 29.7478 38.5872 29.8136C38.6212 29.8794 38.639 29.9523 38.639 30.0264C38.639 30.1004 38.6212 30.1734 38.5872 30.2391C38.5531 30.3049 38.5038 30.3615 38.4434 30.4043Z" fill="black" />
-              <path d="M30 3.75C15.5039 3.75 3.75 15.5039 3.75 30C3.75 44.4961 15.5039 56.25 30 56.25C44.4961 56.25 56.25 44.4961 56.25 30C56.25 15.5039 44.4961 3.75 30 3.75ZM38.4434 30.4043L25.6465 39.7148C25.5763 39.7653 25.4936 39.7954 25.4075 39.8018C25.3213 39.8083 25.2351 39.7909 25.1582 39.7515C25.0813 39.7122 25.0167 39.6524 24.9716 39.5787C24.9264 39.5051 24.9025 39.4204 24.9023 39.334V20.7246C24.9021 20.638 24.9258 20.5531 24.9708 20.4792C25.0158 20.4052 25.0805 20.3452 25.1575 20.3058C25.2346 20.2664 25.3211 20.249 25.4074 20.2557C25.4937 20.2624 25.5764 20.2929 25.6465 20.3438L38.4434 29.6484C38.5038 29.6912 38.5531 29.7478 38.5872 29.8136C38.6212 29.8794 38.639 29.9523 38.639 30.0264C38.639 30.1004 38.6212 30.1734 38.5872 30.2391C38.5531 30.3049 38.5038 30.3615 38.4434 30.4043Z" stroke="white" />
-            </svg>
+            <div className="h-12 items-center flex">
+              <svg className="cursor-pointer active:scale-110 transition-all " width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="60" height="60" rx="30" fill="white" />
+                <path d="M30 3.75C15.5039 3.75 3.75 15.5039 3.75 30C3.75 44.4961 15.5039 56.25 30 56.25C44.4961 56.25 56.25 44.4961 56.25 30C56.25 15.5039 44.4961 3.75 30 3.75ZM38.4434 30.4043L25.6465 39.7148C25.5763 39.7653 25.4936 39.7954 25.4075 39.8018C25.3213 39.8083 25.2351 39.7909 25.1582 39.7515C25.0813 39.7122 25.0167 39.6524 24.9716 39.5787C24.9264 39.5051 24.9025 39.4204 24.9023 39.334V20.7246C24.9021 20.638 24.9258 20.5531 24.9708 20.4792C25.0158 20.4052 25.0805 20.3452 25.1575 20.3058C25.2346 20.2664 25.3211 20.249 25.4074 20.2557C25.4937 20.2624 25.5764 20.2929 25.6465 20.3438L38.4434 29.6484C38.5038 29.6912 38.5531 29.7478 38.5872 29.8136C38.6212 29.8794 38.639 29.9523 38.639 30.0264C38.639 30.1004 38.6212 30.1734 38.5872 30.2391C38.5531 30.3049 38.5038 30.3615 38.4434 30.4043Z" fill="black" />
+                <path d="M30 3.75C15.5039 3.75 3.75 15.5039 3.75 30C3.75 44.4961 15.5039 56.25 30 56.25C44.4961 56.25 56.25 44.4961 56.25 30C56.25 15.5039 44.4961 3.75 30 3.75ZM38.4434 30.4043L25.6465 39.7148C25.5763 39.7653 25.4936 39.7954 25.4075 39.8018C25.3213 39.8083 25.2351 39.7909 25.1582 39.7515C25.0813 39.7122 25.0167 39.6524 24.9716 39.5787C24.9264 39.5051 24.9025 39.4204 24.9023 39.334V20.7246C24.9021 20.638 24.9258 20.5531 24.9708 20.4792C25.0158 20.4052 25.0805 20.3452 25.1575 20.3058C25.2346 20.2664 25.3211 20.249 25.4074 20.2557C25.4937 20.2624 25.5764 20.2929 25.6465 20.3438L38.4434 29.6484C38.5038 29.6912 38.5531 29.7478 38.5872 29.8136C38.6212 29.8794 38.639 29.9523 38.639 30.0264C38.639 30.1004 38.6212 30.1734 38.5872 30.2391C38.5531 30.3049 38.5038 30.3615 38.4434 30.4043Z" stroke="white" />
+              </svg>
+            </div>
             <div className="relative w-12">
               <div className="cursor-pointer select-none absolute z-[0] active:scale-110 active:border-2 transition-all text-2xl bg-[#5A20CB] p-2 flex flex-row [&>*]:ml-1 rounded-md border border-white border-solid " onClick={selectAlgo} >Next
                 <svg width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">

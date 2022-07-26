@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import click from './audio/click.wav'
+import trans from './audio/transition.wav'
 
 function App() {
 
@@ -20,12 +22,14 @@ function App() {
   //stores the index of selected item
   const [selectedElements, setSelectedElements] = useState([]);
   const [isAsc, setIsAsc] = useState(true);
-  const [algo, setAlgo] = useState("Insertion");
+  const [algo, setAlgo] = useState("Bubble");
 
   const playTimeRef = useRef(-1)
   const nextBtnRef = useRef(null)
   const [onPlay, setonPlay] = useState(false);
   const p2RefSelection = useRef(null)
+  const audioClickRef = useRef(null)
+  const audioTransRef = useRef(null)
 
 
   useEffect(() => {
@@ -70,6 +74,8 @@ function App() {
         if (selectedElements[1] - 1 >= 0 && isAsc ? sorted[selectedElements[1] - 1] > sorted[selectedElements[0]] : sorted[selectedElements[1] - 1] < sorted[selectedElements[0]])
           setSelectedElements(p => [p[0], p[1] - 1])
         else {
+          audioClickRef.current.pause()
+          audioTransRef.current.play()
           let p1 = arrowRef.current.p1.getBoundingClientRect().y, p2 = arrowRef.current.p2.getBoundingClientRect().y;
           arrowRef.current.p1.style.backgroundColor = COLOR_SWAP;
           arrowRef.current.p1.classList.add("swapEle");
@@ -138,6 +144,8 @@ function App() {
         // arrowRef.current.p1.style.backgroundColor = COLOR_SWAP;
         // arrowRef.current.p2.style.backgroundColor = COLOR_SWAP;
         currentStep.current = 2;
+        audioClickRef.current.pause()
+        audioTransRef.current.play()
       }
       if (isAsc ? sorted[selectedElements[0]] > sorted[selectedElements[1]] : sorted[selectedElements[0]] < sorted[selectedElements[1]])
         setSelectedElements(p => [p[1], (p[1] + 1) >= sorted.length ? countSorted.current - 1 : p[1] + 1])
@@ -177,6 +185,8 @@ function App() {
     // if first element is greater than second element, mark for swap otherwise getting select next 2 elements
     else if (currentStep.current === 1) {
       if (isAsc ? sorted[selectedElements[0]] > sorted[selectedElements[1]] : sorted[selectedElements[0]] < sorted[selectedElements[1]]) {
+        audioClickRef.current.pause()
+        audioTransRef.current.play()
         let p1 = arrowRef.current.p1.getBoundingClientRect().y, p2 = arrowRef.current.p2.getBoundingClientRect().y;
         arrowRef.current.p1.style.backgroundColor = COLOR_SWAP;
         arrowRef.current.p1.style.transform = `translateY(${p2 - p1}px)`;
@@ -220,6 +230,9 @@ function App() {
   }
 
   const selectAlgo = () => {
+    // audioRef.current.src = click
+    audioClickRef.current.play()
+
     switch (algo) {
       case "Bubble":
         nextStep_Bubble()
@@ -275,6 +288,8 @@ function App() {
 
   return (
     <div className="app bg-[#242B2E] overflow-auto w-full h-screen ">
+      <audio src={click} hidden ref={r => audioClickRef.current = r} ></audio>
+      <audio src={trans} hidden ref={r => audioTransRef.current = r} ></audio>
       {sortCompleted && <div className="onCompletion z-10 fixed left-0 top-0 w-full h-full bg-[#0000004D] flex items-center justify-center ">
         <div className="message rounded-[50px] bg-[#6A1B4D] py-8 px-12 flex flex-col text-center justify-center items-center [&>*]:mb-4 ">
           <h1 className=" font-bold text-4xl text-white ">Hurry ! Array has sorted successfully</h1>

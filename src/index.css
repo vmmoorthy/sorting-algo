@@ -60,3 +60,11 @@ body {
     margin: 0;
     font-family: "inter";
 }
+
+
+/* SWAP elements */
+
+.swapEle {
+    transition: all;
+    transition-duration: 350ms;
+}

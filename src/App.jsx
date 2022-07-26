@@ -25,6 +25,7 @@ function App() {
   const playTimeRef = useRef(-1)
   const nextBtnRef = useRef(null)
   const [onPlay, setonPlay] = useState(false);
+  const p2RefSelection = useRef(null)
 
 
   useEffect(() => {
@@ -69,8 +70,13 @@ function App() {
         if (selectedElements[1] - 1 >= 0 && isAsc ? sorted[selectedElements[1] - 1] > sorted[selectedElements[0]] : sorted[selectedElements[1] - 1] < sorted[selectedElements[0]])
           setSelectedElements(p => [p[0], p[1] - 1])
         else {
+          let p1 = arrowRef.current.p1.getBoundingClientRect().y, p2 = arrowRef.current.p2.getBoundingClientRect().y;
           arrowRef.current.p1.style.backgroundColor = COLOR_SWAP;
+          arrowRef.current.p1.classList.add("swapEle");
+          arrowRef.current.p1.style.transform = `translateY(${p2 - p1}px)`;
           arrowRef.current.p2.style.backgroundColor = COLOR_SWAP;
+          arrowRef.current.p2.classList.add("swapEle");
+          arrowRef.current.p2.style.transform = `translateY(${p1 - p2}px)`;
           currentStep.current = 2
         }
       }
@@ -84,8 +90,14 @@ function App() {
       }
     }
     else if (currentStep.current === 2) {
+      // reset the animation
       arrowRef.current.p1.style.backgroundColor = COLOR_COMPARE;
+      arrowRef.current.p1.classList.remove("swapEle");
+      arrowRef.current.p1.style.transform = '';
       arrowRef.current.p2.style.backgroundColor = COLOR_COMPARE;
+      arrowRef.current.p2.classList.remove("swapEle");
+      arrowRef.current.p2.style.transform = '';
+
       setSorted(pre => {
         const p = [...pre]
         // remove base value
@@ -104,6 +116,7 @@ function App() {
           setSortCompleted(true)
         return [p[0] + 1, p[0]]
       })
+
     }
   }
 
@@ -164,8 +177,13 @@ function App() {
     // if first element is greater than second element, mark for swap otherwise getting select next 2 elements
     else if (currentStep.current === 1) {
       if (isAsc ? sorted[selectedElements[0]] > sorted[selectedElements[1]] : sorted[selectedElements[0]] < sorted[selectedElements[1]]) {
+        let p1 = arrowRef.current.p1.getBoundingClientRect().y, p2 = arrowRef.current.p2.getBoundingClientRect().y;
         arrowRef.current.p1.style.backgroundColor = COLOR_SWAP;
+        arrowRef.current.p1.style.transform = `translateY(${p2 - p1}px)`;
+        arrowRef.current.p1.classList.add("swapEle");
         arrowRef.current.p2.style.backgroundColor = COLOR_SWAP;
+        arrowRef.current.p2.style.transform = `translateY(${p1 - p2}px)`;
+        arrowRef.current.p2.classList.add("swapEle");
         currentStep.current = 2;
       }
       else {
@@ -183,7 +201,11 @@ function App() {
         currentStep.current = 0;
         // reset the selected elements style to default
         arrowRef.current.p1.style.backgroundColor = COLOR_COMPARE;
+        arrowRef.current.p1.classList.remove("swapEle");
+        arrowRef.current.p1.style.transform = '';
         arrowRef.current.p2.style.backgroundColor = COLOR_COMPARE;
+        arrowRef.current.p2.classList.remove("swapEle");
+        arrowRef.current.p2.style.transform = '';
         return newList;
       })
     }
@@ -212,6 +234,20 @@ function App() {
         nextStep_Bubble()
         break;
     }
+  }
+
+  const getSelectionProp = index => {
+    if (algo !== "Selection" || !selectedElements.includes(index))
+      return {}
+    if (currentStep.current === 2) {
+      let p1 = arrowRef.current.p1.getBoundingClientRect().y, p2 = p2RefSelection.current.getBoundingClientRect().y;
+      if (selectedElements[1] === index)//p1
+        return { transform: `translateY(${p1 - p2}px)`, transition: "all 350ms" }
+      if (selectedElements[0] === index)//p2
+        return { transform: `translateY(${p2 - p1}px)`, transition: "all 350ms" }
+      return {}
+    }
+    return {}
   }
 
   const getColor = (index) => {
@@ -255,7 +291,7 @@ function App() {
           <div tabIndex={0} className="dropDown cursor-pointer relative [&>.dropList]:focus:visible flex flex-row justify-center items-center bg-[#6A1B4D] rounded py-1 px-2 "><span className="w-24">{algo}</span><svg width="1.5rem" height="1.5rem" viewBox="0 0 40 40" fill="#fff" xmlns="http://www.w3.org/2000/svg">
             <path d="M32.8281 11.7188H7.17189C6.40235 11.7188 5.97267 12.5313 6.44923 13.0859L19.2774 27.9609C19.6445 28.3867 20.3516 28.3867 20.7227 27.9609L33.5508 13.0859C34.0274 12.5313 33.5977 11.7188 32.8281 11.7188Z" fill="white" />
           </svg>
-            <div className="dropList invisible absolute top-[2.2rem] left-0 w-full  flex flex-col justify-center items-center bg-[#6A1B4D] rounded-b-md">
+            <div className="dropList invisible z-10 absolute top-[2.2rem] left-0 w-full  flex flex-col justify-center items-center bg-[#6A1B4D] rounded-b-md">
               <div onClick={() => setAlgo("Bubble")} className="item p-2 hover:scale-105 transition-all ">Bubble</div>
               <div onClick={() => setAlgo("Insertion")} className="item p-2 hover:scale-105 transition-all ">Insertion</div>
               <div onClick={() => setAlgo("Selection")} className="item p-2 hover:scale-105 transition-all ">Selection</div>
@@ -306,15 +342,18 @@ function App() {
         </div>
         <div className="pageRender  h-full p-2 px-10 text-white">
 
-          <div className="content h-[75vh] overflow-auto ">{sorted.map((value, index) => <div key={index} style={{ width: `${value}%`, backgroundColor: `${getColor(index)}` }}
-            ref={r => {
-              const eleSelectedIndex = selectedElements.indexOf(index)
-              if (eleSelectedIndex === 0)
-                arrowRef.current.p1 = r;
-              else if (eleSelectedIndex === 1) {
-                arrowRef.current.p2 = r; r?.scrollIntoView({ behavior: "smooth", block: "center" })
-              }
-            }} className="value px-2 py-1 select-none bg-[#E03B8B] rounded-r text-[1.5rem]  my-3">{value}</div>)}</div>
+          <div className="content h-[75vh] overflow-auto ">{sorted.map((value, index) =>
+            <div key={index} style={{ width: `${value}%`, backgroundColor: `${getColor(index)}`, ...getSelectionProp(index) }}
+              ref={r => {
+                if (algo === "Selection" && index === (countSorted.current - 1))
+                  p2RefSelection.current = r
+                const eleSelectedIndex = selectedElements.indexOf(index)
+                if (eleSelectedIndex === 0)
+                  arrowRef.current.p1 = r;
+                else if (eleSelectedIndex === 1) {
+                  arrowRef.current.p2 = r; r?.scrollIntoView({ behavior: "smooth", block: "center" })
+                }
+              }} className="value px-2 py-1 select-none bg-[#E03B8B] rounded-r text-[1.5rem]  my-3">{value}</div>)}</div>
 
           <div className="footer mt-5 grid grid-flow-col justify-evenly ">
             {/* <svg className="cursor-pointer active:scale-110 transition-all " width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">

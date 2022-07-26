@@ -2,6 +2,12 @@ import { useEffect, useRef, useState } from "react";
 
 function App() {
 
+  const COLOR_COMPARE = "#38CC77"
+  const COLOR_SWAP = "#E21717"
+  const COLOR_UNSORTED = "#E03B8B"
+  const COLOR_SORTED = "#5A20CB"
+  const COLOR_SORT_T = "#F7CD2E"
+
   // arrowRef
   const arrowRef = useRef({ p1: null, p2: null })
   const currentStep = useRef(0)
@@ -16,6 +22,30 @@ function App() {
   const [isAsc, setIsAsc] = useState(true);
   const [algo, setAlgo] = useState("Insertion");
 
+  const playTimeRef = useRef(-1)
+  const nextBtnRef = useRef(null)
+  const [onPlay, setonPlay] = useState(false);
+
+
+  useEffect(() => {
+    clearInterval(playTimeRef.current)
+    playTimeRef.current = -1
+    setonPlay(false)
+  }, [sortCompleted]);
+
+  const play = () => {
+    const pl = setInterval(() => nextBtnRef.current.click(), 850)
+    playTimeRef.current = pl
+    setonPlay(true)
+  }
+  const pause = () => {
+    clearInterval(playTimeRef.current)
+    playTimeRef.current = -1
+    setonPlay(false)
+  }
+
+
+
   useEffect(() => {
     setSorted([...values])
     // reset all other parameters
@@ -24,6 +54,9 @@ function App() {
     countSorted.current = 1
     arrowRef.current = { p1: null, p2: null }
     setSortCompleted(false)
+    clearInterval(playTimeRef.current)
+    setonPlay(false)
+    playTimeRef.current = -1
   }, [values, isAsc, algo]);
 
   function nextStep_Insertion() {
@@ -36,8 +69,8 @@ function App() {
         if (selectedElements[1] - 1 >= 0 && isAsc ? sorted[selectedElements[1] - 1] > sorted[selectedElements[0]] : sorted[selectedElements[1] - 1] < sorted[selectedElements[0]])
           setSelectedElements(p => [p[0], p[1] - 1])
         else {
-          arrowRef.current.p1.style.backgroundColor = "#E21717";
-          arrowRef.current.p2.style.backgroundColor = "#E21717";
+          arrowRef.current.p1.style.backgroundColor = COLOR_SWAP;
+          arrowRef.current.p2.style.backgroundColor = COLOR_SWAP;
           currentStep.current = 2
         }
       }
@@ -51,8 +84,8 @@ function App() {
       }
     }
     else if (currentStep.current === 2) {
-      arrowRef.current.p1.style.backgroundColor = "#38CC77";
-      arrowRef.current.p2.style.backgroundColor = "#38CC77";
+      arrowRef.current.p1.style.backgroundColor = COLOR_COMPARE;
+      arrowRef.current.p2.style.backgroundColor = COLOR_COMPARE;
       setSorted(pre => {
         const p = [...pre]
         // remove base value
@@ -89,8 +122,8 @@ function App() {
     // if first element is greater than second element, mark for swap otherwise getting select next 2 elements
     else if (currentStep.current === 1) {
       if (sorted.length - 1 <= selectedElements[1]) {
-        // arrowRef.current.p1.style.backgroundColor = "#E21717";
-        // arrowRef.current.p2.style.backgroundColor = "#E21717";
+        // arrowRef.current.p1.style.backgroundColor = COLOR_SWAP;
+        // arrowRef.current.p2.style.backgroundColor = COLOR_SWAP;
         currentStep.current = 2;
       }
       if (isAsc ? sorted[selectedElements[0]] > sorted[selectedElements[1]] : sorted[selectedElements[0]] < sorted[selectedElements[1]])
@@ -131,8 +164,8 @@ function App() {
     // if first element is greater than second element, mark for swap otherwise getting select next 2 elements
     else if (currentStep.current === 1) {
       if (isAsc ? sorted[selectedElements[0]] > sorted[selectedElements[1]] : sorted[selectedElements[0]] < sorted[selectedElements[1]]) {
-        arrowRef.current.p1.style.backgroundColor = "#E21717";
-        arrowRef.current.p2.style.backgroundColor = "#E21717";
+        arrowRef.current.p1.style.backgroundColor = COLOR_SWAP;
+        arrowRef.current.p2.style.backgroundColor = COLOR_SWAP;
         currentStep.current = 2;
       }
       else {
@@ -149,8 +182,8 @@ function App() {
         newList[selectedElements[1]] = temp;
         currentStep.current = 0;
         // reset the selected elements style to default
-        arrowRef.current.p1.style.backgroundColor = "#38CC77";
-        arrowRef.current.p2.style.backgroundColor = "#38CC77";
+        arrowRef.current.p1.style.backgroundColor = COLOR_COMPARE;
+        arrowRef.current.p2.style.backgroundColor = COLOR_COMPARE;
         return newList;
       })
     }
@@ -184,20 +217,20 @@ function App() {
   const getColor = (index) => {
     if (selectedElements.includes(index)) {
       if (algo === "Selection" && currentStep.current === 2) {
-        return "#E21717"
+        return COLOR_SWAP
       }
-      return "#38CC77";
+      return COLOR_COMPARE;
     }
     else {
       if (algo === "Bubble") {
         if (sorted.length - countSorted.current < index)
-          return "#5A20CB";
+          return COLOR_SORTED;
         else
           return ""
       }
       else if (algo === "Selection" || algo === "Insertion") {
         if (countSorted.current - 1 > index)
-          return algo === "Selection" ? "#5A20CB" : "#F7CD2E";
+          return algo === "Selection" ? COLOR_SORTED : COLOR_SORT_T;
         else
           return ""
       }
@@ -217,7 +250,7 @@ function App() {
         </div>
       </div>}
       <div className="head h-[5rem] flex flex-row justify-between px-16 items-center ">
-        <div className="left"><h1 className="text-[2rem] bold text-white" >Values</h1></div>
+        <div className="left"><h1 className="text-[2rem] bold text-white" >Values</h1> </div>
         <div className="right text-white grid grid-flow-col gap-5">
           <div tabIndex={0} className="dropDown cursor-pointer relative [&>.dropList]:focus:visible flex flex-row justify-center items-center bg-[#6A1B4D] rounded py-1 px-2 "><span className="w-24">{algo}</span><svg width="1.5rem" height="1.5rem" viewBox="0 0 40 40" fill="#fff" xmlns="http://www.w3.org/2000/svg">
             <path d="M32.8281 11.7188H7.17189C6.40235 11.7188 5.97267 12.5313 6.44923 13.0859L19.2774 27.9609C19.6445 28.3867 20.3516 28.3867 20.7227 27.9609L33.5508 13.0859C34.0274 12.5313 33.5977 11.7188 32.8281 11.7188Z" fill="white" />
@@ -240,27 +273,29 @@ function App() {
           </div>
           <div className="colorAbbr gap-1 grid grid-flow-row grid-cols-2">
             <div className="wrap grid justify-start w-32 grid-flow-col  text-white text-sm ">
-              <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: "#38CC77" }} ></div><div className="pl-2">To Compare</div>
+              <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: COLOR_COMPARE }} ></div><div className="pl-2">To Compare</div>
             </div>
             <div className="wrap grid justify-start w-32 grid-flow-col  text-white text-sm ">
-              <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: "#E21717" }} ></div><div className="pl-2">To swap</div>
+              <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: COLOR_SWAP }} ></div><div className="pl-2">To swap</div>
             </div>
             <div className="wrap grid justify-start w-32 grid-flow-col  text-white text-sm ">
-              <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: "#E03B8B" }} ></div><div className="pl-2">Unsorted</div>
+              <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: COLOR_UNSORTED }} ></div><div className="pl-2">Unsorted</div>
             </div>
             {algo !== "Insertion" ? <div className="wrap grid justify-start w-32 grid-flow-col  text-white text-sm ">
-              <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: "#5A20CB" }} ></div><div className="pl-2">Sorted</div>
+              <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: COLOR_SORTED }} ></div><div className="pl-2">Sorted</div>
             </div>
               : <div className="wrap grid justify-start w-32 grid-flow-col  text-white text-sm ">
-                <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: "#F7CD2E" }} ></div><div className="pl-2 whitespace-nowrap">Tentatively Sorted</div>
+                <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: COLOR_SORT_T }} ></div><div className="pl-2 whitespace-nowrap">Tentatively Sorted</div>
               </div>}
           </div>
         </div>
       </div>
       <div className="body h-[calc(100%_-_5rem)]  grid grid-flow-col">
         <div className="values h-full p-2 px-10 text-white">
-          <div className="content max-h-[75vh] overflow-auto ">
-            {values.map((value, index) => <div key={index} style={{ width: `${value}%` }} className="value px-2 py-1 bg-[#E03B8B] rounded-r text-[1.5rem]  my-3">{value}</div>)}
+          <div className="content h-[75vh] overflow-auto">
+            {values.map((value, index) => <div key={index} className="relative [&_div]:hover:opacity-100"> <div style={{ width: `${value}%` }} className={`value px-2 py-1 bg-[${COLOR_UNSORTED}] rounded-r text-[1.5rem]  my-3 `}>{value} <div className="absolute opacity-0 right-2 top-1.5 active:scale-105 transition-all cursor-pointer " onClick={() => setValues(p => p.filter((v, i) => i !== index))} >
+              <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="2rem" height="2rem" preserveAspectRatio="xMidYMid meet" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"><path d="m10.25 5.75l-4.5 4.5m0-4.5l4.5 4.5" /><circle cx="8" cy="8" r="6.25" /></g></svg>
+            </div> </div></div>)}
           </div>
           <div className="footer mt-5 grid grid-flow-col justify-center gap-2">
             <input type="text" onKeyDown={e => e.key === "Enter" && addElement()} ref={r => inputRef.current = r} className=" rounded min-w-[2rem] max-w-[5rem] w-fit border border-solid border-white p-1  bg-[#6A1B4D]" />
@@ -271,7 +306,7 @@ function App() {
         </div>
         <div className="pageRender  h-full p-2 px-10 text-white">
 
-          <div className="content max-h-[75vh] overflow-auto ">{sorted.map((value, index) => <div key={index} style={{ width: `${value}%`, backgroundColor: `${getColor(index)}` }}
+          <div className="content h-[75vh] overflow-auto ">{sorted.map((value, index) => <div key={index} style={{ width: `${value}%`, backgroundColor: `${getColor(index)}` }}
             ref={r => {
               const eleSelectedIndex = selectedElements.indexOf(index)
               if (eleSelectedIndex === 0)
@@ -279,22 +314,27 @@ function App() {
               else if (eleSelectedIndex === 1) {
                 arrowRef.current.p2 = r; r?.scrollIntoView({ behavior: "smooth", block: "center" })
               }
-            }} className="value px-2 py-1 select-none bg-[#E03B8B] rounded-r text-[1.5rem]  my-3">{value}</div>)}</div>
+            }} className={`value px-2 py-1 select-none bg-[${COLOR_UNSORTED}] rounded-r text-[1.5rem]  my-3`}>{value}</div>)}</div>
 
           <div className="footer mt-5 grid grid-flow-col justify-evenly ">
             {/* <svg className="cursor-pointer active:scale-110 transition-all " width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path fillRule="evenodd" clipRule="evenodd" d="M30 2.5C14.8125 2.5 2.5 14.8125 2.5 30C2.5 45.1875 14.8125 57.5 30 57.5C45.1875 57.5 57.5 45.1875 57.5 30C57.5 14.8125 45.1875 2.5 30 2.5ZM35 22C35.0041 21.6452 34.9148 21.2956 34.741 20.9862C34.5672 20.6768 34.3151 20.4186 34.01 20.2375C33.7136 20.067 33.3742 19.9857 33.0327 20.0034C32.6912 20.0212 32.3621 20.1372 32.085 20.3375L20.835 28.3375C20.5738 28.5284 20.3619 28.7788 20.2167 29.0679C20.0715 29.357 19.9972 29.6765 20 30C20 30.67 20.3125 31.2925 20.835 31.665L32.085 39.665C32.3621 39.8653 32.6912 39.9813 33.0327 39.9991C33.3742 40.0168 33.7136 39.9355 34.01 39.765C34.3155 39.5837 34.5678 39.3251 34.7416 39.0152C34.9154 38.7054 35.0045 38.3552 35 38V22Z" fill="white" />
             </svg> */}
 
-            <div className="h-12 items-center flex">
-              <svg className="cursor-pointer active:scale-110 transition-all " width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {!onPlay ? <div className="h-12 items-center flex">
+              <svg onClick={play} className="cursor-pointer active:scale-110 transition-all " width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect width="60" height="60" rx="30" fill="white" />
                 <path d="M30 3.75C15.5039 3.75 3.75 15.5039 3.75 30C3.75 44.4961 15.5039 56.25 30 56.25C44.4961 56.25 56.25 44.4961 56.25 30C56.25 15.5039 44.4961 3.75 30 3.75ZM38.4434 30.4043L25.6465 39.7148C25.5763 39.7653 25.4936 39.7954 25.4075 39.8018C25.3213 39.8083 25.2351 39.7909 25.1582 39.7515C25.0813 39.7122 25.0167 39.6524 24.9716 39.5787C24.9264 39.5051 24.9025 39.4204 24.9023 39.334V20.7246C24.9021 20.638 24.9258 20.5531 24.9708 20.4792C25.0158 20.4052 25.0805 20.3452 25.1575 20.3058C25.2346 20.2664 25.3211 20.249 25.4074 20.2557C25.4937 20.2624 25.5764 20.2929 25.6465 20.3438L38.4434 29.6484C38.5038 29.6912 38.5531 29.7478 38.5872 29.8136C38.6212 29.8794 38.639 29.9523 38.639 30.0264C38.639 30.1004 38.6212 30.1734 38.5872 30.2391C38.5531 30.3049 38.5038 30.3615 38.4434 30.4043Z" fill="black" />
                 <path d="M30 3.75C15.5039 3.75 3.75 15.5039 3.75 30C3.75 44.4961 15.5039 56.25 30 56.25C44.4961 56.25 56.25 44.4961 56.25 30C56.25 15.5039 44.4961 3.75 30 3.75ZM38.4434 30.4043L25.6465 39.7148C25.5763 39.7653 25.4936 39.7954 25.4075 39.8018C25.3213 39.8083 25.2351 39.7909 25.1582 39.7515C25.0813 39.7122 25.0167 39.6524 24.9716 39.5787C24.9264 39.5051 24.9025 39.4204 24.9023 39.334V20.7246C24.9021 20.638 24.9258 20.5531 24.9708 20.4792C25.0158 20.4052 25.0805 20.3452 25.1575 20.3058C25.2346 20.2664 25.3211 20.249 25.4074 20.2557C25.4937 20.2624 25.5764 20.2929 25.6465 20.3438L38.4434 29.6484C38.5038 29.6912 38.5531 29.7478 38.5872 29.8136C38.6212 29.8794 38.639 29.9523 38.639 30.0264C38.639 30.1004 38.6212 30.1734 38.5872 30.2391C38.5531 30.3049 38.5038 30.3615 38.4434 30.4043Z" stroke="white" />
               </svg>
-            </div>
+            </div> :
+              <div className="h-12 items-center flex">
+                <svg onClick={pause} className="cursor-pointer active:scale-110 transition-all " width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M30 3.75C15.5039 3.75 3.75 15.5039 3.75 30C3.75 44.4961 15.5039 56.25 30 56.25C44.4961 56.25 56.25 44.4961 56.25 30C56.25 15.5039 44.4961 3.75 30 3.75ZM25.3125 38.9062C25.3125 39.1641 25.1016 39.375 24.8438 39.375H22.0312C21.7734 39.375 21.5625 39.1641 21.5625 38.9062V21.0938C21.5625 20.8359 21.7734 20.625 22.0312 20.625H24.8438C25.1016 20.625 25.3125 20.8359 25.3125 21.0938V38.9062ZM38.4375 38.9062C38.4375 39.1641 38.2266 39.375 37.9688 39.375H35.1562C34.8984 39.375 34.6875 39.1641 34.6875 38.9062V21.0938C34.6875 20.8359 34.8984 20.625 35.1562 20.625H37.9688C38.2266 20.625 38.4375 20.8359 38.4375 21.0938V38.9062Z" fill="white" />
+                </svg>
+              </div>}
             <div className="relative w-12">
-              <div className="cursor-pointer select-none absolute z-[0] active:scale-110 active:border-2 transition-all text-2xl bg-[#5A20CB] p-2 flex flex-row [&>*]:ml-1 rounded-md border border-white border-solid " onClick={selectAlgo} >Next
+              <div className="cursor-pointer select-none absolute z-[0] active:scale-110 active:border-2 transition-all text-2xl bg-[#5A20CB] p-2 flex flex-row [&>*]:ml-1 rounded-md border border-white border-solid " onClick={selectAlgo} ref={r => nextBtnRef.current = r} >Next
                 <svg width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path fillRule="evenodd" clipRule="evenodd" d="M30 2.5C14.8125 2.5 2.5 14.8125 2.5 30C2.5 45.1875 14.8125 57.5 30 57.5C45.1875 57.5 57.5 45.1875 57.5 30C57.5 14.8125 45.1875 2.5 30 2.5ZM25 22C25 21.2625 25.38 20.585 25.99 20.2375C26.2864 20.067 26.6258 19.9857 26.9673 20.0034C27.3088 20.0212 27.6379 20.1372 27.915 20.3375L39.165 28.3375C39.4262 28.5284 39.6381 28.7788 39.7833 29.0679C39.9285 29.357 40.0028 29.6765 40 30C40.0032 30.3239 39.9291 30.6439 39.7839 30.9335C39.6387 31.2231 39.4265 31.4738 39.165 31.665L27.915 39.665C27.6379 39.8653 27.3088 39.9813 26.9673 39.9991C26.6258 40.0168 26.2864 39.9355 25.99 39.765C25.6845 39.5837 25.4322 39.3251 25.2584 39.0152C25.0846 38.7054 24.9955 38.3552 25 38V22Z" fill="white" />
                 </svg>

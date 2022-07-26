@@ -293,7 +293,7 @@ function App() {
       <div className="body h-[calc(100%_-_5rem)]  grid grid-flow-col">
         <div className="values h-full p-2 px-10 text-white">
           <div className="content h-[75vh] overflow-auto">
-            {values.map((value, index) => <div key={index} className="relative [&_div]:hover:opacity-100"> <div style={{ width: `${value}%` }} className={`value px-2 py-1 bg-[${COLOR_UNSORTED}] rounded-r text-[1.5rem]  my-3 `}>{value} <div className="absolute opacity-0 right-2 top-1.5 active:scale-105 transition-all cursor-pointer " onClick={() => setValues(p => p.filter((v, i) => i !== index))} >
+            {values.map((value, index) => <div key={index} className="relative [&_div]:hover:opacity-100"> <div style={{ width: `${value}%` }} className="value px-2 py-1 bg-[#E03B8B] rounded-r text-[1.5rem]  my-3 ">{value} <div className="absolute opacity-0 right-2 top-1.5 active:scale-105 transition-all cursor-pointer " onClick={() => setValues(p => p.filter((v, i) => i !== index))} >
               <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="2rem" height="2rem" preserveAspectRatio="xMidYMid meet" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"><path d="m10.25 5.75l-4.5 4.5m0-4.5l4.5 4.5" /><circle cx="8" cy="8" r="6.25" /></g></svg>
             </div> </div></div>)}
           </div>
@@ -314,7 +314,7 @@ function App() {
               else if (eleSelectedIndex === 1) {
                 arrowRef.current.p2 = r; r?.scrollIntoView({ behavior: "smooth", block: "center" })
               }
-            }} className={`value px-2 py-1 select-none bg-[${COLOR_UNSORTED}] rounded-r text-[1.5rem]  my-3`}>{value}</div>)}</div>
+            }} className="value px-2 py-1 select-none bg-[#E03B8B] rounded-r text-[1.5rem]  my-3">{value}</div>)}</div>
 
           <div className="footer mt-5 grid grid-flow-col justify-evenly ">
             {/* <svg className="cursor-pointer active:scale-110 transition-all " width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">

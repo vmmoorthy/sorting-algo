@@ -9,13 +9,12 @@ function App() {
   const inputRef = useRef(null)
 
   const [sortCompleted, setSortCompleted] = useState(false);
-  const [values, setValues] = useState([45, 5, 6, 65, 52, 82, 12, 2, 101, 100, 24]);
+  const [values, setValues] = useState([45, 5, 6, 65, 52, 82, 12, 2, 100, 24]);
   const [sorted, setSorted] = useState([]);
   //stores the index of selected item
   const [selectedElements, setSelectedElements] = useState([]);
   const [isAsc, setIsAsc] = useState(true);
   const [algo, setAlgo] = useState("Insertion");
-  const insertionPointer = useRef(0)
 
   useEffect(() => {
     setSorted([...values])
@@ -28,33 +27,38 @@ function App() {
   }, [values, isAsc, algo]);
 
   function nextStep_Insertion() {
-    if (currentStep.current == 0) {
-      setSelectedElements([0, 1]) //[previous,base]
+    if (currentStep.current === 0) {
+      setSelectedElements([1, 0]) //[base,previous]
       currentStep.current = 1
     }
-    else if (currentStep.current == 1) {
-      if (sorted[selectedElements[1]] < sorted[selectedElements[0]]) {
-        if (selectedElements[0] - 1 >= 0 && sorted[selectedElements[0] - 1] > sorted[selectedElements[1]])
-          setSelectedElements(p => [p[0] - 1, p[1]])
-        else
+    else if (currentStep.current === 1) {
+      if (isAsc ? sorted[selectedElements[0]] < sorted[selectedElements[1]] : sorted[selectedElements[0]] > sorted[selectedElements[1]]) {
+        if (selectedElements[1] - 1 >= 0 && isAsc ? sorted[selectedElements[1] - 1] > sorted[selectedElements[0]] : sorted[selectedElements[1] - 1] < sorted[selectedElements[0]])
+          setSelectedElements(p => [p[0], p[1] - 1])
+        else {
+          arrowRef.current.p1.style.backgroundColor = "#E21717";
+          arrowRef.current.p2.style.backgroundColor = "#E21717";
           currentStep.current = 2
+        }
       }
       else {
         countSorted.current += 1
         setSelectedElements(p => {
-          if (p[1] >= sorted.length)
+          if (p[0] >= sorted.length)
             setSortCompleted(true)
-          return [p[1], p[1] + 1]
+          return [p[0] + 1, p[0]]
         })
       }
     }
-    else if (currentStep.current == 2) {
+    else if (currentStep.current === 2) {
+      arrowRef.current.p1.style.backgroundColor = "#38CC77";
+      arrowRef.current.p2.style.backgroundColor = "#38CC77";
       setSorted(pre => {
         const p = [...pre]
         // remove base value
-        const [baseValue] = p.splice(selectedElements[1], 1)
+        const [baseValue] = p.splice(selectedElements[0], 1)
         // add base value to appropriate position
-        p.splice(selectedElements[0], 0, baseValue)
+        p.splice(selectedElements[1], 0, baseValue)
         return p
       })
       // increase sorted count
@@ -63,9 +67,9 @@ function App() {
       currentStep.current = 1
       // move selection 
       setSelectedElements(p => {
-        if (p[1] >= sorted.length)
+        if (p[0] >= sorted.length)
           setSortCompleted(true)
-        return [p[1], p[1] + 1]
+        return [p[0] + 1, p[0]]
       })
     }
   }
@@ -212,7 +216,7 @@ function App() {
           <div onClick={() => setTimeout(() => setSortCompleted(false), 200)} className="btn bg-[#FF6666] text-white text-[1.5rem] px-5 py-2 cursor-pointer  transition-all font-bold rounded-xl active:scale-125 ">Done</div>
         </div>
       </div>}
-      <div className="head h-[5rem] flex flex-row justify-around items-center ">
+      <div className="head h-[5rem] flex flex-row justify-between px-16 items-center ">
         <div className="left"><h1 className="text-[2rem] bold text-white" >Values</h1></div>
         <div className="right text-white grid grid-flow-col gap-5">
           <div tabIndex={0} className="dropDown cursor-pointer relative [&>.dropList]:focus:visible flex flex-row justify-center items-center bg-[#6A1B4D] rounded py-1 px-2 "><span className="w-24">{algo}</span><svg width="1.5rem" height="1.5rem" viewBox="0 0 40 40" fill="#fff" xmlns="http://www.w3.org/2000/svg">
@@ -233,6 +237,23 @@ function App() {
               <input type="radio" onChange={() => setIsAsc(false)} name="order" id="descOrder" />
               Descending
             </label>
+          </div>
+          <div className="colorAbbr gap-1 grid grid-flow-row grid-cols-2">
+            <div className="wrap grid justify-start w-32 grid-flow-col  text-white text-sm ">
+              <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: "#38CC77" }} ></div><div className="pl-2">To Compare</div>
+            </div>
+            <div className="wrap grid justify-start w-32 grid-flow-col  text-white text-sm ">
+              <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: "#E21717" }} ></div><div className="pl-2">To swap</div>
+            </div>
+            <div className="wrap grid justify-start w-32 grid-flow-col  text-white text-sm ">
+              <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: "#E03B8B" }} ></div><div className="pl-2">Unsorted</div>
+            </div>
+            {algo !== "Insertion" ? <div className="wrap grid justify-start w-32 grid-flow-col  text-white text-sm ">
+              <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: "#5A20CB" }} ></div><div className="pl-2">Sorted</div>
+            </div>
+              : <div className="wrap grid justify-start w-32 grid-flow-col  text-white text-sm ">
+                <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: "#F7CD2E" }} ></div><div className="pl-2 whitespace-nowrap">Tentatively Sorted</div>
+              </div>}
           </div>
         </div>
       </div>

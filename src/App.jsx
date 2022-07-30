@@ -22,11 +22,12 @@ function App() {
   //stores the index of selected item
   const [selectedElements, setSelectedElements] = useState([]);
   const [isAsc, setIsAsc] = useState(true);
-  const [algo, setAlgo] = useState("Selection"); //Bubble
+  const [algo, setAlgo] = useState("Bubble");
 
   const playTimeRef = useRef(-1)
   const nextBtnRef = useRef(null)
   const [onPlay, setonPlay] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const p2RefSelection = useRef(null)
   const p1_p2 = useRef("p1")
   const audioClickRef = useRef(null)
@@ -296,8 +297,8 @@ function App() {
 
   return (
     <div className="app bg-[#242B2E] overflow-auto w-full h-screen ">
-      <audio src={click} hidden ref={r => audioClickRef.current = r} ></audio>
-      <audio src={trans} hidden ref={r => audioTransRef.current = r} ></audio>
+      <audio muted={isMuted} src={click} hidden ref={r => audioClickRef.current = r} ></audio>
+      <audio muted={isMuted} src={trans} hidden ref={r => audioTransRef.current = r} ></audio>
       {sortCompleted && <div className="onCompletion z-10 fixed left-0 top-0 w-full h-full bg-[#0000004D] flex items-center justify-center ">
         <div className="message rounded-[50px] bg-[#6A1B4D] py-8 px-12 flex flex-col text-center justify-center items-center [&>*]:mb-4 ">
           <h1 className=" font-bold text-4xl text-white ">Hurry ! Array has sorted successfully</h1>
@@ -346,6 +347,13 @@ function App() {
               : <div className="wrap grid justify-start w-32 grid-flow-col  text-white text-sm ">
                 <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: COLOR_SORT_T }} ></div><div className="pl-2 whitespace-nowrap">Tentatively Sorted</div>
               </div>}
+          </div>
+          <div onClick={() => setIsMuted(p => !p)} className="mute cursor-pointer">
+            {isMuted ? <svg width="50" height="50" viewBox="0 0 76 76" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M51.0625 27.3125L67.6875 48.6875M8.3125 27.3125V48.6875H20.1875L39.1875 62.9375V13.0625L20.1875 27.3125H8.3125ZM67.6875 27.3125L51.0625 48.6875L67.6875 27.3125Z" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg> : <svg width="50" height="50" viewBox="0 0 74 74" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M54.3438 15.0312C63.5938 19.6562 68.2188 26.5938 68.2188 37C68.2188 47.4062 63.5938 54.3438 54.3438 58.9688M8.09375 26.5938V47.4062H19.6562L38.1562 61.2812V12.7188L19.6562 26.5938H8.09375ZM49.7188 28.9062C49.7188 28.9062 54.3438 31.2188 54.3438 37C54.3438 42.7812 49.7188 45.0938 49.7188 45.0938V28.9062Z" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>}
           </div>
         </div>
       </div>

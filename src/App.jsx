@@ -28,6 +28,7 @@ function App() {
   const nextBtnRef = useRef(null)
   const [onPlay, setonPlay] = useState(false);
   const p2RefSelection = useRef(null)
+  const p1_p2 = useRef("p1")
   const audioClickRef = useRef(null)
   const audioTransRef = useRef(null)
 
@@ -80,9 +81,9 @@ function App() {
           arrowRef.current.p1.style.backgroundColor = COLOR_SWAP;
           arrowRef.current.p1.classList.add("swapEle");
           arrowRef.current.p1.style.position = `absolute`;
-          arrowRef.current.p1.style.transform = `translateY(${(p2 - p1) - arrowRef.current.p2.offsetHeight -24}px)`; //static 24px for default margin
+          arrowRef.current.p1.style.transform = `translateY(${(p2 - p1) - arrowRef.current.p2.offsetHeight - 24}px)`; //static 24px for default margin
           arrowRef.current.p2.style.backgroundColor = COLOR_SWAP;
-          arrowRef.current.p2.style.marginTop = `${arrowRef.current.p2.offsetHeight+24}px`;
+          arrowRef.current.p2.style.marginTop = `${arrowRef.current.p2.offsetHeight + 24}px`;
           currentStep.current = 2
         }
       }
@@ -149,10 +150,14 @@ function App() {
         audioClickRef.current.pause()
         audioTransRef.current.play()
       }
-      if (isAsc ? sorted[selectedElements[0]] > sorted[selectedElements[1]] : sorted[selectedElements[0]] < sorted[selectedElements[1]])
+      if (isAsc ? sorted[selectedElements[0]] > sorted[selectedElements[1]] : sorted[selectedElements[0]] < sorted[selectedElements[1]]) {
+        p1_p2.current = "p2";
         setSelectedElements(p => [p[1], (p[1] + 1) >= sorted.length ? countSorted.current - 1 : p[1] + 1])
-      else
+      }
+      else {
+        p1_p2.current = "p1";
         setSelectedElements(p => [p[0], (p[1] + 1) >= sorted.length ? countSorted.current - 1 : p[1] + 1])
+      }
     }
     // swap them
     else if (currentStep.current === 2) {
@@ -255,10 +260,11 @@ function App() {
     if (algo !== "Selection" || !selectedElements.includes(index))
       return {}
     if (currentStep.current === 2) {
-      let p1 = arrowRef.current.p1.getBoundingClientRect().y, p2 = p2RefSelection.current.getBoundingClientRect().y;
-      if (selectedElements[1] === index)//p1
+      let p1 = arrowRef.current[p1_p2.current].getBoundingClientRect().y, p2 = p2RefSelection.current.getBoundingClientRect().y;
+      console.log(p1, p2);
+      if ((countSorted.current - 1) === index)//p2
         return { transform: `translateY(${p1 - p2}px)`, transition: "all 350ms" }
-      if (selectedElements[0] === index)//p2
+      if (selectedElements[0] === index)//p1
         return { transform: `translateY(${p2 - p1}px)`, transition: "all 350ms" }
       return {}
     }

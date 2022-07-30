@@ -22,7 +22,7 @@ function App() {
   //stores the index of selected item
   const [selectedElements, setSelectedElements] = useState([]);
   const [isAsc, setIsAsc] = useState(true);
-  const [algo, setAlgo] = useState("Bubble");
+  const [algo, setAlgo] = useState("Selection"); //Bubble
 
   const playTimeRef = useRef(-1)
   const nextBtnRef = useRef(null)
@@ -79,10 +79,10 @@ function App() {
           let p1 = arrowRef.current.p1.getBoundingClientRect().y, p2 = arrowRef.current.p2.getBoundingClientRect().y;
           arrowRef.current.p1.style.backgroundColor = COLOR_SWAP;
           arrowRef.current.p1.classList.add("swapEle");
-          arrowRef.current.p1.style.transform = `translateY(${p2 - p1}px)`;
+          arrowRef.current.p1.style.position = `absolute`;
+          arrowRef.current.p1.style.transform = `translateY(${(p2 - p1) - arrowRef.current.p2.offsetHeight -24}px)`; //static 24px for default margin
           arrowRef.current.p2.style.backgroundColor = COLOR_SWAP;
-          arrowRef.current.p2.classList.add("swapEle");
-          arrowRef.current.p2.style.transform = `translateY(${p1 - p2}px)`;
+          arrowRef.current.p2.style.marginTop = `${arrowRef.current.p2.offsetHeight+24}px`;
           currentStep.current = 2
         }
       }
@@ -99,10 +99,12 @@ function App() {
       // reset the animation
       arrowRef.current.p1.style.backgroundColor = COLOR_COMPARE;
       arrowRef.current.p1.classList.remove("swapEle");
+      arrowRef.current.p1.style.position = ``;
       arrowRef.current.p1.style.transform = '';
       arrowRef.current.p2.style.backgroundColor = COLOR_COMPARE;
       arrowRef.current.p2.classList.remove("swapEle");
       arrowRef.current.p2.style.transform = '';
+      arrowRef.current.p2.style.marginTop = '';
 
       setSorted(pre => {
         const p = [...pre]
@@ -357,7 +359,7 @@ function App() {
         </div>
         <div className="pageRender  h-full p-2 px-10 text-white">
 
-          <div className="content h-[75vh] overflow-auto ">{sorted.map((value, index) =>
+          <div className="content h-[75vh] overflow-auto relative ">{sorted.map((value, index) =>
             <div key={index} style={{ width: `${value}%`, backgroundColor: `${getColor(index)}`, ...getSelectionProp(index) }}
               ref={r => {
                 if (algo === "Selection" && index === (countSorted.current - 1))

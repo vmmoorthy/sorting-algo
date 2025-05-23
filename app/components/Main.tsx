@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import click from '../assets/audio/click.wav'
 import trans from '../assets/audio/transition.wav'
+import useBuubleSort from "~/hooks/useBubbleSort";
+import type { ElementType } from "~/types";
 
 export function Main() {
 
@@ -11,28 +13,34 @@ export function Main() {
   const COLOR_SORT_T = "#F7CD2E"
 
   // arrowRef
-  const arrowRef = useRef<{ p1: HTMLDivElement, p2: HTMLDivElement }>({ p1: null as never as HTMLDivElement, p2: null as never as HTMLDivElement })
+  // const arrowRef = useRef<{ p1: HTMLDivElement, p2: HTMLDivElement }>({ p1: null as never as HTMLDivElement, p2: null as never as HTMLDivElement })
   const currentStep = useRef(0)
   const countSorted = useRef(1)
   const inputRef = useRef<HTMLInputElement>(null as never as HTMLInputElement)
 
   const [sortCompleted, setSortCompleted] = useState(false);
-  const [values, setValues] = useState([45, 5, 6, 65, 52, 82, 12, 2, 100, 24]);
+  // const [values, setValues] = useState([45, 5, 6, 65, 52, 82, 12, 2, 100, 24]);
   const [sorted, setSorted] = useState<number[]>([]);
   //stores the index of selected item
   const [selectedElements, setSelectedElements] = useState<number[]>([]);
   const [isAsc, setIsAsc] = useState(true);
+  const initValues = [45, 5, 6, 65, 52, 82, 12, 2, 100, 24]
+  const { isCompleted, nextStep, values } = useBuubleSort(initValues, isAsc)
+  console.log(values)
   const [algo, setAlgo] = useState("Bubble");
 
   const playTimeRef = useRef<NodeJS.Timeout>(-1 as never as NodeJS.Timeout)
   const nextBtnRef = useRef<HTMLDivElement>(null as never as HTMLDivElement)
   const [onPlay, setonPlay] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const p2RefSelection = useRef<HTMLDivElement>(null as never as HTMLDivElement)
-  const p1_p2 = useRef<"p1" | "p2">("p1")
+  // const p2RefSelection = useRef<HTMLDivElement>(null as never as HTMLDivElement)
+  // const p1_p2 = useRef<"p1" | "p2">("p1")
   const audioClickRef = useRef<HTMLAudioElement>(null as never as HTMLAudioElement)
   const audioTransRef = useRef<HTMLAudioElement>(null as never as HTMLAudioElement)
 
+  useEffect(() => {
+    setSortCompleted(isCompleted)
+  }, [isCompleted])
 
   useEffect(() => {
     clearInterval(playTimeRef.current)
@@ -53,247 +61,258 @@ export function Main() {
 
 
 
-  useEffect(() => {
-    setSorted([...values])
-    // reset all other parameters
-    setSelectedElements([])
-    currentStep.current = 0
-    countSorted.current = 1
-    arrowRef.current = { p1: null as never as HTMLDivElement, p2: null as never as HTMLDivElement }
-    setSortCompleted(false)
-    clearInterval(playTimeRef.current)
-    setonPlay(false)
-    playTimeRef.current = -1 as never as NodeJS.Timeout
-  }, [values, isAsc, algo]);
+  // useEffect(() => {
+  //   // TODO Reset
+  //   // setSorted([...values])
+  //   // reset all other parameters
+  //   setSelectedElements([])
+  //   currentStep.current = 0
+  //   countSorted.current = 1
+  //   arrowRef.current = { p1: null as never as HTMLDivElement, p2: null as never as HTMLDivElement }
+  //   setSortCompleted(false)
+  //   clearInterval(playTimeRef.current)
+  //   setonPlay(false)
+  //   playTimeRef.current = -1 as never as NodeJS.Timeout
+  // }, [values, isAsc, algo]);
 
-  function nextStep_Insertion() {
-    if (currentStep.current === 0) {
-      setSelectedElements([1, 0]) //[base,previous]
-      currentStep.current = 1
-    }
-    else if (currentStep.current === 1) {
-      if (isAsc ? sorted[selectedElements[0]] < sorted[selectedElements[1]] : sorted[selectedElements[0]] > sorted[selectedElements[1]]) {
-        if (selectedElements[1] - 1 >= 0 && isAsc ? sorted[selectedElements[1] - 1] > sorted[selectedElements[0]] : sorted[selectedElements[1] - 1] < sorted[selectedElements[0]])
-          setSelectedElements(p => [p[0], p[1] - 1])
-        else {
-          audioClickRef.current.pause()
-          audioTransRef.current.play()
-          let p1 = arrowRef.current.p1.getBoundingClientRect().y, p2 = arrowRef.current.p2.getBoundingClientRect().y;
-          arrowRef.current.p1.style.backgroundColor = COLOR_SWAP;
-          arrowRef.current.p1.classList.add("swapEle");
-          arrowRef.current.p1.style.position = `absolute`;
-          arrowRef.current.p1.style.transform = `translateY(${(p2 - p1) - arrowRef.current.p2.offsetHeight - 24}px)`; //static 24px for default margin
-          arrowRef.current.p2.style.backgroundColor = COLOR_SWAP;
-          arrowRef.current.p2.style.marginTop = `${arrowRef.current.p2.offsetHeight + 24}px`;
-          currentStep.current = 2
-        }
-      }
-      else {
-        countSorted.current += 1
-        setSelectedElements(p => {
-          if (p[0] >= sorted.length)
-            setSortCompleted(true)
-          return [p[0] + 1, p[0]]
-        })
-      }
-    }
-    else if (currentStep.current === 2) {
-      // reset the animation
-      arrowRef.current.p1.style.backgroundColor = COLOR_COMPARE;
-      arrowRef.current.p1.classList.remove("swapEle");
-      arrowRef.current.p1.style.position = ``;
-      arrowRef.current.p1.style.transform = '';
-      arrowRef.current.p2.style.backgroundColor = COLOR_COMPARE;
-      arrowRef.current.p2.classList.remove("swapEle");
-      arrowRef.current.p2.style.transform = '';
-      arrowRef.current.p2.style.marginTop = '';
+  // function nextStep_Insertion() {
+  //   if (currentStep.current === 0) {
+  //     setSelectedElements([1, 0]) //[base,previous]
+  //     currentStep.current = 1
+  //   }
+  //   else if (currentStep.current === 1) {
+  //     if (isAsc ? sorted[selectedElements[0]] < sorted[selectedElements[1]] : sorted[selectedElements[0]] > sorted[selectedElements[1]]) {
+  //       if (selectedElements[1] - 1 >= 0 && isAsc ? sorted[selectedElements[1] - 1] > sorted[selectedElements[0]] : sorted[selectedElements[1] - 1] < sorted[selectedElements[0]])
+  //         setSelectedElements(p => [p[0], p[1] - 1])
+  //       else {
+  //         audioClickRef.current.pause()
+  //         audioTransRef.current.play()
+  //         let p1 = arrowRef.current.p1.getBoundingClientRect().y, p2 = arrowRef.current.p2.getBoundingClientRect().y;
+  //         arrowRef.current.p1.style.backgroundColor = COLOR_SWAP;
+  //         arrowRef.current.p1.classList.add("swapEle");
+  //         arrowRef.current.p1.style.position = `absolute`;
+  //         arrowRef.current.p1.style.transform = `translateY(${(p2 - p1) - arrowRef.current.p2.offsetHeight - 24}px)`; //static 24px for default margin
+  //         arrowRef.current.p2.style.backgroundColor = COLOR_SWAP;
+  //         arrowRef.current.p2.style.marginTop = `${arrowRef.current.p2.offsetHeight + 24}px`;
+  //         currentStep.current = 2
+  //       }
+  //     }
+  //     else {
+  //       countSorted.current += 1
+  //       setSelectedElements(p => {
+  //         if (p[0] >= sorted.length)
+  //           setSortCompleted(true)
+  //         return [p[0] + 1, p[0]]
+  //       })
+  //     }
+  //   }
+  //   else if (currentStep.current === 2) {
+  //     // reset the animation
+  //     arrowRef.current.p1.style.backgroundColor = COLOR_COMPARE;
+  //     arrowRef.current.p1.classList.remove("swapEle");
+  //     arrowRef.current.p1.style.position = ``;
+  //     arrowRef.current.p1.style.transform = '';
+  //     arrowRef.current.p2.style.backgroundColor = COLOR_COMPARE;
+  //     arrowRef.current.p2.classList.remove("swapEle");
+  //     arrowRef.current.p2.style.transform = '';
+  //     arrowRef.current.p2.style.marginTop = '';
 
-      setSorted(pre => {
-        const p = [...pre]
-        // remove base value
-        const [baseValue] = p.splice(selectedElements[0], 1)
-        // add base value to appropriate position
-        p.splice(selectedElements[1], 0, baseValue)
-        return p
-      })
-      // increase sorted count
-      countSorted.current += 1
-      // move to step 1
-      currentStep.current = 1
-      // move selection 
-      setSelectedElements(p => {
-        if (p[0] >= sorted.length)
-          setSortCompleted(true)
-        return [p[0] + 1, p[0]]
-      })
+  //     setSorted(pre => {
+  //       const p = [...pre]
+  //       // remove base value
+  //       const [baseValue] = p.splice(selectedElements[0], 1)
+  //       // add base value to appropriate position
+  //       p.splice(selectedElements[1], 0, baseValue)
+  //       return p
+  //     })
+  //     // increase sorted count
+  //     countSorted.current += 1
+  //     // move to step 1
+  //     currentStep.current = 1
+  //     // move selection 
+  //     setSelectedElements(p => {
+  //       if (p[0] >= sorted.length)
+  //         setSortCompleted(true)
+  //       return [p[0] + 1, p[0]]
+  //     })
 
-    }
-  }
+  //   }
+  // }
 
-  function nextStep_Selection() {
-    // for selection sort
-    if (currentStep.current === 0)
-      // select 2 elements
-      setSelectedElements(p => {
-        if (sorted.length - countSorted.current <= 0) { countSorted.current = sorted.length + 1; setSortCompleted(true); return ([]) }
-        const first = countSorted.current - 1;
-        //check the selected elements is smaller than next element
-        currentStep.current = 1;
-        return [first, first + 1];
-      });
+  // function nextStep_Selection() {
+  //   // for selection sort
+  //   if (currentStep.current === 0)
+  //     // select 2 elements
+  //     setSelectedElements(p => {
+  //       if (sorted.length - countSorted.current <= 0) { countSorted.current = sorted.length + 1; setSortCompleted(true); return ([]) }
+  //       const first = countSorted.current - 1;
+  //       //check the selected elements is smaller than next element
+  //       currentStep.current = 1;
+  //       return [first, first + 1];
+  //     });
 
-    // if first element is greater than second element, mark for swap otherwise getting select next 2 elements
-    else if (currentStep.current === 1) {
-      if (sorted.length - 1 <= selectedElements[1]) {
-        // arrowRef.current.p1.style.backgroundColor = COLOR_SWAP;
-        // arrowRef.current.p2.style.backgroundColor = COLOR_SWAP;
-        currentStep.current = 2;
-        audioClickRef.current.pause()
-        audioTransRef.current.play()
-      }
-      if (isAsc ? sorted[selectedElements[0]] > sorted[selectedElements[1]] : sorted[selectedElements[0]] < sorted[selectedElements[1]]) {
-        p1_p2.current = "p2";
-        setSelectedElements(p => [p[1], (p[1] + 1) >= sorted.length ? countSorted.current - 1 : p[1] + 1])
-      }
-      else {
-        p1_p2.current = "p1";
-        setSelectedElements(p => [p[0], (p[1] + 1) >= sorted.length ? countSorted.current - 1 : p[1] + 1])
-      }
-    }
-    // swap them
-    else if (currentStep.current === 2) {
-      setSorted(p => {
-        const newList = [...p];
-        const temp = newList[countSorted.current - 2];
-        newList[countSorted.current - 2] = newList[selectedElements[0]];
-        newList[selectedElements[0]] = temp;
-        currentStep.current = 0;
-        return newList;
-      })
-      countSorted.current += 1;
-    }
-  }
+  //   // if first element is greater than second element, mark for swap otherwise getting select next 2 elements
+  //   else if (currentStep.current === 1) {
+  //     if (sorted.length - 1 <= selectedElements[1]) {
+  //       // arrowRef.current.p1.style.backgroundColor = COLOR_SWAP;
+  //       // arrowRef.current.p2.style.backgroundColor = COLOR_SWAP;
+  //       currentStep.current = 2;
+  //       audioClickRef.current.pause()
+  //       audioTransRef.current.play()
+  //     }
+  //     if (isAsc ? sorted[selectedElements[0]] > sorted[selectedElements[1]] : sorted[selectedElements[0]] < sorted[selectedElements[1]]) {
+  //       p1_p2.current = "p2";
+  //       setSelectedElements(p => [p[1], (p[1] + 1) >= sorted.length ? countSorted.current - 1 : p[1] + 1])
+  //     }
+  //     else {
+  //       p1_p2.current = "p1";
+  //       setSelectedElements(p => [p[0], (p[1] + 1) >= sorted.length ? countSorted.current - 1 : p[1] + 1])
+  //     }
+  //   }
+  //   // swap them
+  //   else if (currentStep.current === 2) {
+  //     setSorted(p => {
+  //       const newList = [...p];
+  //       const temp = newList[countSorted.current - 2];
+  //       newList[countSorted.current - 2] = newList[selectedElements[0]];
+  //       newList[selectedElements[0]] = temp;
+  //       currentStep.current = 0;
+  //       return newList;
+  //     })
+  //     countSorted.current += 1;
+  //   }
+  // }
 
-  function nextStep_Bubble() {
-    // for bubble sort
-    if (currentStep.current === 0)
-      // select 2 elements
-      setSelectedElements(p => {
-        const first = !isNaN(p[0]) ? p[0] + 1 : 0;
-        currentStep.current = 1;
-        //validate the length of the array
-        if (first >= sorted.length - countSorted.current) {
-          // for sort completion
-          if (sorted.length - countSorted.current <= 0) { countSorted.current = sorted.length + 1; setSortCompleted(true); return ([]) }
-          else countSorted.current += 1;
-          return [0, 1];
-        }
-        return [first, first + 1];
-      });
-    // if first element is greater than second element, mark for swap otherwise getting select next 2 elements
-    else if (currentStep.current === 1) {
-      if (isAsc ? sorted[selectedElements[0]] > sorted[selectedElements[1]] : sorted[selectedElements[0]] < sorted[selectedElements[1]]) {
-        audioClickRef.current.pause()
-        audioTransRef.current.play()
-        let p1 = arrowRef.current.p1.getBoundingClientRect().y, p2 = arrowRef.current.p2.getBoundingClientRect().y;
-        arrowRef.current.p1.style.backgroundColor = COLOR_SWAP;
-        arrowRef.current.p1.style.transform = `translateY(${p2 - p1}px)`;
-        arrowRef.current.p1.classList.add("swapEle");
-        arrowRef.current.p2.style.backgroundColor = COLOR_SWAP;
-        arrowRef.current.p2.style.transform = `translateY(${p1 - p2}px)`;
-        arrowRef.current.p2.classList.add("swapEle");
-        currentStep.current = 2;
-      }
-      else {
-        currentStep.current = 0;
-        nextStep_Bubble()
-      }
-    }
-    // swap them
-    else if (currentStep.current === 2) {
-      setSorted(p => {
-        const newList = [...p];
-        const temp = newList[selectedElements[0]];
-        newList[selectedElements[0]] = newList[selectedElements[1]];
-        newList[selectedElements[1]] = temp;
-        currentStep.current = 0;
-        // reset the selected elements style to default
-        arrowRef.current.p1.style.backgroundColor = COLOR_COMPARE;
-        arrowRef.current.p1.classList.remove("swapEle");
-        arrowRef.current.p1.style.transform = '';
-        arrowRef.current.p2.style.backgroundColor = COLOR_COMPARE;
-        arrowRef.current.p2.classList.remove("swapEle");
-        arrowRef.current.p2.style.transform = '';
-        return newList;
-      })
-    }
-  }
+  // function nextStep_Bubble() {
+  //   // for bubble sort
+  //   if (currentStep.current === 0)
+  //     // select 2 elements
+  //     setSelectedElements(p => {
+  //       const first = !isNaN(p[0]) ? p[0] + 1 : 0;
+  //       currentStep.current = 1;
+  //       //validate the length of the array
+  //       if (first >= sorted.length - countSorted.current) {
+  //         // for sort completion
+  //         if (sorted.length - countSorted.current <= 0) { countSorted.current = sorted.length + 1; setSortCompleted(true); return ([]) }
+  //         else countSorted.current += 1;
+  //         return [0, 1];
+  //       }
+  //       return [first, first + 1];
+  //     });
+  //   // if first element is greater than second element, mark for swap otherwise getting select next 2 elements
+  //   else if (currentStep.current === 1) {
+  //     if (isAsc ? sorted[selectedElements[0]] > sorted[selectedElements[1]] : sorted[selectedElements[0]] < sorted[selectedElements[1]]) {
+  //       audioClickRef.current.pause()
+  //       audioTransRef.current.play()
+  //       let p1 = arrowRef.current.p1.getBoundingClientRect().y, p2 = arrowRef.current.p2.getBoundingClientRect().y;
+  //       arrowRef.current.p1.style.backgroundColor = COLOR_SWAP;
+  //       arrowRef.current.p1.style.transform = `translateY(${p2 - p1}px)`;
+  //       arrowRef.current.p1.classList.add("swapEle");
+  //       arrowRef.current.p2.style.backgroundColor = COLOR_SWAP;
+  //       arrowRef.current.p2.style.transform = `translateY(${p1 - p2}px)`;
+  //       arrowRef.current.p2.classList.add("swapEle");
+  //       currentStep.current = 2;
+  //     }
+  //     else {
+  //       currentStep.current = 0;
+  //       nextStep_Bubble()
+  //     }
+  //   }
+  //   // swap them
+  //   else if (currentStep.current === 2) {
+  //     setSorted(p => {
+  //       const newList = [...p];
+  //       const temp = newList[selectedElements[0]];
+  //       newList[selectedElements[0]] = newList[selectedElements[1]];
+  //       newList[selectedElements[1]] = temp;
+  //       currentStep.current = 0;
+  //       // reset the selected elements style to default
+  //       arrowRef.current.p1.style.backgroundColor = COLOR_COMPARE;
+  //       arrowRef.current.p1.classList.remove("swapEle");
+  //       arrowRef.current.p1.style.transform = '';
+  //       arrowRef.current.p2.style.backgroundColor = COLOR_COMPARE;
+  //       arrowRef.current.p2.classList.remove("swapEle");
+  //       arrowRef.current.p2.style.transform = '';
+  //       return newList;
+  //     })
+  //   }
+  // }
 
   const addElement = () => {
     const val = inputRef.current.value
     if (val === "" || isNaN(Number(val))) return;
-    setValues(p => [...p, Number(val)])
+    // TODO
+    // setValues(p => [...p, Number(val)])
     inputRef.current.value = ""
     inputRef.current.focus()
   }
 
-  const selectAlgo = () => {
-    // audioRef.current.src = click
-    audioClickRef.current.play()
+  // const selectAlgo = () => {
+  //   // audioRef.current.src = click
+  //   audioClickRef.current.play()
 
-    switch (algo) {
-      case "Bubble":
-        nextStep_Bubble()
-        break;
-      case "Insertion":
-        nextStep_Insertion()
-        break;
-      case "Selection":
-        nextStep_Selection()
-        break;
-      default:
-        nextStep_Bubble()
-        break;
-    }
-  }
+  //   switch (algo) {
+  //     case "Bubble":
+  //       nextStep_Bubble()
+  //       break;
+  //     case "Insertion":
+  //       nextStep_Insertion()
+  //       break;
+  //     case "Selection":
+  //       nextStep_Selection()
+  //       break;
+  //     default:
+  //       nextStep_Bubble()
+  //       break;
+  //   }
+  // }
 
-  const getSelectionProp = (index: number) => {
-    if (algo !== "Selection" || !selectedElements.includes(index))
-      return {}
-    if (currentStep.current === 2) {
-      let p1 = arrowRef.current[p1_p2.current].getBoundingClientRect().y, p2 = p2RefSelection.current.getBoundingClientRect().y;
-      console.log(p1, p2);
-      if ((countSorted.current - 1) === index)//p2
-        return { transform: `translateY(${p1 - p2}px)`, transition: "all 350ms" }
-      if (selectedElements[0] === index)//p1
-        return { transform: `translateY(${p2 - p1}px)`, transition: "all 350ms" }
-      return {}
-    }
-    return {}
-  }
+  // const getSelectionProp = (index: number) => {
+  //   if (algo !== "Selection" || !selectedElements.includes(index))
+  //     return {}
+  //   if (currentStep.current === 2) {
+  //     let p1 = arrowRef.current[p1_p2.current].getBoundingClientRect().y, p2 = p2RefSelection.current.getBoundingClientRect().y;
+  //     console.log(p1, p2);
+  //     if ((countSorted.current - 1) === index)//p2
+  //       return { transform: `translateY(${p1 - p2}px)`, transition: "all 350ms" }
+  //     if (selectedElements[0] === index)//p1
+  //       return { transform: `translateY(${p2 - p1}px)`, transition: "all 350ms" }
+  //     return {}
+  //   }
+  //   return {}
+  // }
 
-  const getColor = (index: number) => {
-    if (selectedElements.includes(index)) {
-      if (algo === "Selection" && currentStep.current === 2) {
-        return COLOR_SWAP
-      }
-      return COLOR_COMPARE;
-    }
-    else {
-      if (algo === "Bubble") {
-        if (sorted.length - countSorted.current < index)
-          return COLOR_SORTED;
-        else
-          return ""
-      }
-      else if (algo === "Selection" || algo === "Insertion") {
-        if (countSorted.current - 1 > index)
-          return algo === "Selection" ? COLOR_SORTED : COLOR_SORT_T;
-        else
-          return ""
-      }
-    }
+  const getColor = (element: ElementType): string => {
+    if (element.IsSorted)
+      return COLOR_SORTED;
+    if (element.isMarkedForSwap)
+      return COLOR_SWAP
+    if (element.isMarkedForCompare)
+      return COLOR_COMPARE
+    return COLOR_UNSORTED
   }
+  // const getColor = (index: number) => {
+  //   if (selectedElements.includes(index)) {
+  //     if (algo === "Selection" && currentStep.current === 2) {
+  //       return COLOR_SWAP
+  //     }
+  //     return COLOR_COMPARE;
+  //   }
+  //   else {
+  //     if (algo === "Bubble") {
+  //       if (sorted.length - countSorted.current < index)
+  //         return COLOR_SORTED;
+  //       else
+  //         return ""
+  //     }
+  //     else if (algo === "Selection" || algo === "Insertion") {
+  //       if (countSorted.current - 1 > index)
+  //         return algo === "Selection" ? COLOR_SORTED : COLOR_SORT_T;
+  //       else
+  //         return ""
+  //     }
+  //   }
+  // }
 
   return (
     <div onContextMenu={e => e.preventDefault()} className="app bg-[#242B2E] overflow-auto w-full h-screen ">
@@ -379,7 +398,10 @@ export function Main() {
       <div className="body h-[calc(100%_-_5rem)]  grid grid-flow-col">
         <div className="values h-full p-2 px-10 text-white">
           <div className="content h-[75vh] overflow-auto">
-            {values.map((value, index) => <div key={index} className="relative [&_div]:hover:opacity-100"> <div style={{ width: `${value}%` }} className="value px-2 py-1 bg-[#E03B8B] rounded-r text-[1.5rem]  my-3 ">{value} <div className="absolute opacity-0 right-2 top-1.5 active:scale-105 transition-all cursor-pointer " onClick={() => setValues(p => p.filter((v, i) => i !== index))} >
+            {initValues.map((value, index) => <div key={index} className="relative [&_div]:hover:opacity-100"> <div style={{ width: `${value}%` }} className="value px-2 py-1 bg-[#E03B8B] rounded-r text-[1.5rem]  my-3 ">{value} <div className="absolute opacity-0 right-2 top-1.5 active:scale-105 transition-all cursor-pointer "
+            // TODO Delete funtionality
+            // onClick={() => setValues(p => p.filter((v, i) => i !== index))}
+            >
               <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="2rem" height="2rem" preserveAspectRatio="xMidYMid meet" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"><path d="m10.25 5.75l-4.5 4.5m0-4.5l4.5 4.5" /><circle cx="8" cy="8" r="6.25" /></g></svg>
             </div> </div></div>)}
           </div>
@@ -392,18 +414,24 @@ export function Main() {
         </div>
         <div className="pageRender  h-full p-2 px-10 text-white">
 
-          <div className="content h-[75vh] overflow-auto relative ">{sorted.map((value, index) =>
-            <div key={index} style={{ width: `${value}%`, backgroundColor: `${getColor(index)}`, ...getSelectionProp(index) }}
+          <div className="content h-[75vh] overflow-auto relative ">{values.map((element, index) =>
+            <div key={index} style={{
+              width: `${element}%`, backgroundColor: `${getColor(element)}`,
+              // TODO
+              // ...getSelectionProp(index) 
+            }}
               ref={r => {
-                if (algo === "Selection" && index === (countSorted.current - 1) && r)
-                  p2RefSelection.current = r
-                const eleSelectedIndex = selectedElements.indexOf(index)
-                if (eleSelectedIndex === 0 && r)
-                  arrowRef.current.p1 = r;
-                else if (eleSelectedIndex === 1 && r) {
-                  arrowRef.current.p2 = r; r?.scrollIntoView({ behavior: "smooth", block: "center" })
-                }
-              }} className="value px-2 py-1 select-none bg-[#E03B8B] rounded-r text-[1.5rem]  my-3">{value}</div>)}</div>
+                // if (algo === "Selection" && index === (countSorted.current - 1) && r)
+                //   p2RefSelection.current = r
+                // const eleSelectedIndex = selectedElements.indexOf(index)
+                // if (eleSelectedIndex === 0 && r)
+                //   arrowRef.current.p1 = r;
+                // else if (eleSelectedIndex === 1 && r) {
+                //   arrowRef.current.p2 = r; r?.scrollIntoView({ behavior: "smooth", block: "center" })
+                // }
+              }}
+              className="value px-2 py-1 select-none bg-[#E03B8B] rounded-r text-[1.5rem]  my-3">{element.value}</div>)}
+          </div>
 
           <div className="footer mt-5 grid grid-flow-col justify-evenly ">
             {/* <svg className="cursor-pointer active:scale-110 transition-all " width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -423,7 +451,7 @@ export function Main() {
                 </svg>
               </div>}
             <div className="relative w-12">
-              <div className="cursor-pointer select-none absolute z-[0] active:scale-110 active:border-2 transition-all text-2xl bg-[#5A20CB] p-2 flex flex-row [&>*]:ml-1 rounded-md border border-white border-solid " onClick={selectAlgo} ref={nextBtnRef} >Next
+              <div className="cursor-pointer select-none absolute z-[0] active:scale-110 active:border-2 transition-all text-2xl bg-[#5A20CB] p-2 flex flex-row [&>*]:ml-1 rounded-md border border-white border-solid " onClick={nextStep} ref={nextBtnRef} >Next
                 <svg width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path fillRule="evenodd" clipRule="evenodd" d="M30 2.5C14.8125 2.5 2.5 14.8125 2.5 30C2.5 45.1875 14.8125 57.5 30 57.5C45.1875 57.5 57.5 45.1875 57.5 30C57.5 14.8125 45.1875 2.5 30 2.5ZM25 22C25 21.2625 25.38 20.585 25.99 20.2375C26.2864 20.067 26.6258 19.9857 26.9673 20.0034C27.3088 20.0212 27.6379 20.1372 27.915 20.3375L39.165 28.3375C39.4262 28.5284 39.6381 28.7788 39.7833 29.0679C39.9285 29.357 40.0028 29.6765 40 30C40.0032 30.3239 39.9291 30.6439 39.7839 30.9335C39.6387 31.2231 39.4265 31.4738 39.165 31.665L27.915 39.665C27.6379 39.8653 27.3088 39.9813 26.9673 39.9991C26.6258 40.0168 26.2864 39.9355 25.99 39.765C25.6845 39.5837 25.4322 39.3251 25.2584 39.0152C25.0846 38.7054 24.9955 38.3552 25 38V22Z" fill="white" />
                 </svg>

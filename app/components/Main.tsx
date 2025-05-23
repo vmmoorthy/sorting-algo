@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import click from '../assets/audio/click.wav'
 import trans from '../assets/audio/transition.wav'
-import useBuubleSort from "~/hooks/useBubbleSort";
+import useBubbleSort from "~/hooks/useBubbleSort";
 import type { ElementType } from "~/types";
 
 export function Main() {
@@ -13,7 +13,7 @@ export function Main() {
   const COLOR_SORT_T = "#F7CD2E"
 
   // arrowRef
-  // const arrowRef = useRef<{ p1: HTMLDivElement, p2: HTMLDivElement }>({ p1: null as never as HTMLDivElement, p2: null as never as HTMLDivElement })
+  const arrowRef = useRef<{ p1: HTMLDivElement | null, p2: HTMLDivElement | null }>({ p1: null, p2: null })
   const currentStep = useRef(0)
   const countSorted = useRef(1)
   const inputRef = useRef<HTMLInputElement>(null as never as HTMLInputElement)
@@ -25,18 +25,26 @@ export function Main() {
   const [selectedElements, setSelectedElements] = useState<number[]>([]);
   const [isAsc, setIsAsc] = useState(true);
   const initValues = [45, 5, 6, 65, 52, 82, 12, 2, 100, 24]
-  const { isCompleted, nextStep, values } = useBuubleSort(initValues, isAsc)
-  console.log(values)
+  const { isCompleted, nextStep, values } = useBubbleSort(initValues, isAsc)
+
   const [algo, setAlgo] = useState("Bubble");
 
   const playTimeRef = useRef<NodeJS.Timeout>(-1 as never as NodeJS.Timeout)
   const nextBtnRef = useRef<HTMLDivElement>(null as never as HTMLDivElement)
-  const [onPlay, setonPlay] = useState(false);
+  const [onPlay, setOnPlay] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   // const p2RefSelection = useRef<HTMLDivElement>(null as never as HTMLDivElement)
   // const p1_p2 = useRef<"p1" | "p2">("p1")
   const audioClickRef = useRef<HTMLAudioElement>(null as never as HTMLAudioElement)
   const audioTransRef = useRef<HTMLAudioElement>(null as never as HTMLAudioElement)
+
+  useEffect(() => {
+    audioClickRef.current.play()
+    if (values.findIndex(v => v.isMarkedForSwap) > -1) {
+      audioClickRef.current.pause()
+      audioTransRef.current.play()
+    }
+  }, [values])
 
   useEffect(() => {
     setSortCompleted(isCompleted)
@@ -45,18 +53,18 @@ export function Main() {
   useEffect(() => {
     clearInterval(playTimeRef.current)
     playTimeRef.current = -1 as never as NodeJS.Timeout
-    setonPlay(false)
+    setOnPlay(false)
   }, [sortCompleted]);
 
   const play = () => {
     const pl = setInterval(() => nextBtnRef.current.click(), 850)
     playTimeRef.current = pl
-    setonPlay(true)
+    setOnPlay(true)
   }
   const pause = () => {
     clearInterval(playTimeRef.current)
     playTimeRef.current = -1 as never as NodeJS.Timeout
-    setonPlay(false)
+    setOnPlay(false)
   }
 
 
@@ -268,8 +276,6 @@ export function Main() {
   // }
 
   // const getSelectionProp = (index: number) => {
-  //   if (algo !== "Selection" || !selectedElements.includes(index))
-  //     return {}
   //   if (currentStep.current === 2) {
   //     let p1 = arrowRef.current[p1_p2.current].getBoundingClientRect().y, p2 = p2RefSelection.current.getBoundingClientRect().y;
   //     console.log(p1, p2);
@@ -291,28 +297,7 @@ export function Main() {
       return COLOR_COMPARE
     return COLOR_UNSORTED
   }
-  // const getColor = (index: number) => {
-  //   if (selectedElements.includes(index)) {
-  //     if (algo === "Selection" && currentStep.current === 2) {
-  //       return COLOR_SWAP
-  //     }
-  //     return COLOR_COMPARE;
-  //   }
-  //   else {
-  //     if (algo === "Bubble") {
-  //       if (sorted.length - countSorted.current < index)
-  //         return COLOR_SORTED;
-  //       else
-  //         return ""
-  //     }
-  //     else if (algo === "Selection" || algo === "Insertion") {
-  //       if (countSorted.current - 1 > index)
-  //         return algo === "Selection" ? COLOR_SORTED : COLOR_SORT_T;
-  //       else
-  //         return ""
-  //     }
-  //   }
-  // }
+
 
   return (
     <div onContextMenu={e => e.preventDefault()} className="app bg-[#242B2E] overflow-auto w-full h-screen ">
@@ -374,7 +359,7 @@ export function Main() {
               <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: COLOR_COMPARE }} ></div><div className="pl-2">To Compare</div>
             </div>
             <div className="wrap grid justify-start w-32 grid-flow-col  text-white text-sm ">
-              <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: COLOR_SWAP }} ></div><div className="pl-2">To swap</div>
+              <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: COLOR_SWAP }} ></div><div className="pl-2">Just Swaped</div>
             </div>
             <div className="wrap grid justify-start w-32 grid-flow-col  text-white text-sm ">
               <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: COLOR_UNSORTED }} ></div><div className="pl-2">Unsorted</div>
@@ -414,23 +399,30 @@ export function Main() {
         </div>
         <div className="pageRender  h-full p-2 px-10 text-white">
 
-          <div className="content h-[75vh] overflow-auto relative ">{values.map((element, index) =>
-            <div key={index} style={{
-              width: `${element}%`, backgroundColor: `${getColor(element)}`,
+          <div className="content h-[75vh] overflow-auto relative ">{values.map((element, index) => {
+            let props = { transform: "", };
+            if (element.isMarkedForSwap && arrowRef.current.p1 && arrowRef.current.p2) {
+              let p1 = arrowRef.current.p1.getBoundingClientRect().y, p2 = arrowRef.current.p2.getBoundingClientRect().y;
+              if (values.findIndex(v => v.isMarkedForSwap) === index) //p1
+                props.transform = `translateY(${p2 - p1}px)`
+              else //p2
+                props.transform = `translateY(${p1 - p2}px)`
+            }
+            return <div key={index} style={{
+              width: `${element.value}%`, backgroundColor: `${getColor(element)}`,
+              ...props
               // TODO
-              // ...getSelectionProp(index) 
+              // ...getSelectionProp(element)
             }}
               ref={r => {
-                // if (algo === "Selection" && index === (countSorted.current - 1) && r)
-                //   p2RefSelection.current = r
-                // const eleSelectedIndex = selectedElements.indexOf(index)
-                // if (eleSelectedIndex === 0 && r)
-                //   arrowRef.current.p1 = r;
-                // else if (eleSelectedIndex === 1 && r) {
-                //   arrowRef.current.p2 = r; r?.scrollIntoView({ behavior: "smooth", block: "center" })
-                // }
+                if (element.isMarkedForSwap)
+                  if (values.findIndex(v => v.isMarkedForSwap) === index)
+                    arrowRef.current.p1 = r
+                  else
+                    arrowRef.current.p2 = r
               }}
-              className="value px-2 py-1 select-none bg-[#E03B8B] rounded-r text-[1.5rem]  my-3">{element.value}</div>)}
+              className={"value px-2 py-1 select-none bg-[#E03B8B] rounded-r text-[1.5rem]  my-3 " + (element.isMarkedForSwap ? "transition-transform duration-300" : "")}>{element.value}</div>
+          })}
           </div>
 
           <div className="footer mt-5 grid grid-flow-col justify-evenly ">

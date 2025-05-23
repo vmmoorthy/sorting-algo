@@ -3,15 +3,23 @@ import type { ElementType } from "~/types";
 
 
 
-const useBuubleSort = (arr: number[], isAsc: boolean) => {
+const useBubbleSort = (arr: number[], isAsc: boolean) => {
     const [flagI, setFlagI] = useState(0)
     const [flagJ, setFlagJ] = useState(0);
     const [isCompleted, setIsCompleted] = useState(false);
-    const [values, setValues] = useState<ElementType[]>(() => arr.map(num => ({ value: num, isMarkedForSwap: false, IsSorted: false, isMarkedForCompare: false })))
+    const [values, setValues] = useState<ElementType[]>([])
 
     useEffect(() => {
         setValues(preValues => preValues.map((val, i) => ({ ...val, isMarkedForCompare: flagJ === i || flagJ + 1 === i })))
     }, [flagJ])
+
+    useEffect(() => {
+        // reset State
+        setValues(() => arr.map(num => ({ value: num, isMarkedForSwap: false, IsSorted: false, isMarkedForCompare: false })))
+        setFlagI(0)
+        setFlagJ(0)
+        setIsCompleted(false)
+    }, [isAsc])
 
     const nextFunction = (values: ElementType[]) => {
 
@@ -22,7 +30,7 @@ const useBuubleSort = (arr: number[], isAsc: boolean) => {
 
         if (flagI < values.length - 1)
             if (flagJ < values.length - flagI - 1) {
-                if (values[flagJ].value > values[flagJ + 1].value) {
+                if (isAsc ? values[flagJ].value > values[flagJ + 1].value : values[flagJ].value < values[flagJ + 1].value) {
                     // check for swap flag
                     if (values[flagJ].isMarkedForSwap && values[flagJ + 1].isMarkedForSwap) {// if true then make swap
                         const temp = values[flagJ]
@@ -74,4 +82,4 @@ const useBuubleSort = (arr: number[], isAsc: boolean) => {
     };
 }
 
-export default useBuubleSort;
+export default useBubbleSort;

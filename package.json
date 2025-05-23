@@ -18,16 +18,17 @@
     "typecheck": "react-router typegen && tsc"
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.7",
-    "postcss": "^8.4.14",
     "@react-router/dev": "^7.5.3",
     "@tailwindcss/vite": "^4.1.7",
     "@types/node": "^20",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
+    "autoprefixer": "^10.4.7",
+    "postcss": "^8.4.14",
     "tailwindcss": "^4.1.7",
     "typescript": "^5.8.3",
     "vite": "^6.3.3",
+    "vite-plugin-devtools-json": "^0.1.0",
     "vite-tsconfig-paths": "^5.1.4"
   }
 }

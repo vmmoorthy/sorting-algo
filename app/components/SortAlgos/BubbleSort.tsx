@@ -1,0 +1,98 @@
+import { useContext, useEffect, useRef } from "react";
+import { COLOR_COMPARE, COLOR_SORTED, COLOR_SWAP, COLOR_UNSORTED } from "~/constants";
+import { MainContext } from "~/contextProvider/MainContextProvider";
+import useBubbleSort from "~/hooks/useBubbleSort";
+import type { ElementType } from "~/types";
+
+const getColor = (element: ElementType): string => {
+    if (element.IsSorted)
+        return COLOR_SORTED;
+    if (element.isMarkedForSwap)
+        return COLOR_SWAP
+    if (element.isMarkedForCompare)
+        return COLOR_COMPARE
+    return COLOR_UNSORTED
+}
+
+
+const BubbleSort = ({ initValues, isAsc, }: { initValues: number[], isAsc: boolean, }) => {
+    //   pause, play, onPlay, nextBtnRef }
+    // { nextBtnRef: React.RefObject<HTMLDivElement>, onPlay: boolean, play: () => void, pause: () => void }
+    const { setSortCompleted, audioClickRef, audioTransRef, onPlay, play, pause, nextBtnRef } = useContext(MainContext)
+    const { isCompleted, nextStep, values } = useBubbleSort(initValues, isAsc)
+
+    const arrowRef = useRef<{ p1: HTMLDivElement | null, p2: HTMLDivElement | null }>({ p1: null, p2: null })
+
+    useEffect(() => {
+        setSortCompleted(isCompleted)
+    }, [isCompleted])
+
+    useEffect(() => {
+        audioClickRef.current.play()
+        if (values.findIndex(v => v.isMarkedForSwap) > -1) {
+            audioClickRef.current.pause()
+            audioTransRef.current.play()
+        }
+    }, [values])
+
+    useEffect(() => {
+        setSortCompleted(isCompleted)
+    }, [isCompleted])
+    return (
+        <div className="pageRender  h-full p-2 px-10 text-white">
+
+            <div className="content h-[75vh] overflow-auto relative ">{values.map((element, index) => {
+                let props = { transform: "", };
+                if (element.isMarkedForSwap && arrowRef.current.p1 && arrowRef.current.p2) {
+                    let p1 = arrowRef.current.p1.getBoundingClientRect().y, p2 = arrowRef.current.p2.getBoundingClientRect().y;
+                    if (values.findIndex(v => v.isMarkedForSwap) === index) //p1
+                        props.transform = `translateY(${p2 - p1}px)`
+                    else //p2
+                        props.transform = `translateY(${p1 - p2}px)`
+                }
+                return <div key={index} style={{
+                    width: `${element.value}%`, backgroundColor: `${getColor(element)}`,
+                    ...props
+                }}
+                    ref={r => {
+                        if (element.isMarkedForSwap)
+                            if (values.findIndex(v => v.isMarkedForSwap) === index)
+                                arrowRef.current.p1 = r
+                            else
+                                arrowRef.current.p2 = r
+                    }}
+                    className={"value px-2 py-1 select-none bg-[#E03B8B] rounded-r text-[1.5rem]  my-3 " + (element.isMarkedForSwap ? "transition-transform duration-300" : "")}>{element.value}</div>
+            })}
+            </div>
+
+            <div className="footer mt-5 grid grid-flow-col justify-evenly ">
+                {/* <svg className="cursor-pointer active:scale-110 transition-all " width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fillRule="evenodd" clipRule="evenodd" d="M30 2.5C14.8125 2.5 2.5 14.8125 2.5 30C2.5 45.1875 14.8125 57.5 30 57.5C45.1875 57.5 57.5 45.1875 57.5 30C57.5 14.8125 45.1875 2.5 30 2.5ZM35 22C35.0041 21.6452 34.9148 21.2956 34.741 20.9862C34.5672 20.6768 34.3151 20.4186 34.01 20.2375C33.7136 20.067 33.3742 19.9857 33.0327 20.0034C32.6912 20.0212 32.3621 20.1372 32.085 20.3375L20.835 28.3375C20.5738 28.5284 20.3619 28.7788 20.2167 29.0679C20.0715 29.357 19.9972 29.6765 20 30C20 30.67 20.3125 31.2925 20.835 31.665L32.085 39.665C32.3621 39.8653 32.6912 39.9813 33.0327 39.9991C33.3742 40.0168 33.7136 39.9355 34.01 39.765C34.3155 39.5837 34.5678 39.3251 34.7416 39.0152C34.9154 38.7054 35.0045 38.3552 35 38V22Z" fill="white" />
+            </svg> */}
+
+                {!onPlay ? <div className="h-12 items-center flex">
+                    <svg onClick={play} className="cursor-pointer active:scale-110 transition-all " width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="60" height="60" rx="30" fill="white" />
+                        <path d="M30 3.75C15.5039 3.75 3.75 15.5039 3.75 30C3.75 44.4961 15.5039 56.25 30 56.25C44.4961 56.25 56.25 44.4961 56.25 30C56.25 15.5039 44.4961 3.75 30 3.75ZM38.4434 30.4043L25.6465 39.7148C25.5763 39.7653 25.4936 39.7954 25.4075 39.8018C25.3213 39.8083 25.2351 39.7909 25.1582 39.7515C25.0813 39.7122 25.0167 39.6524 24.9716 39.5787C24.9264 39.5051 24.9025 39.4204 24.9023 39.334V20.7246C24.9021 20.638 24.9258 20.5531 24.9708 20.4792C25.0158 20.4052 25.0805 20.3452 25.1575 20.3058C25.2346 20.2664 25.3211 20.249 25.4074 20.2557C25.4937 20.2624 25.5764 20.2929 25.6465 20.3438L38.4434 29.6484C38.5038 29.6912 38.5531 29.7478 38.5872 29.8136C38.6212 29.8794 38.639 29.9523 38.639 30.0264C38.639 30.1004 38.6212 30.1734 38.5872 30.2391C38.5531 30.3049 38.5038 30.3615 38.4434 30.4043Z" fill="black" />
+                        <path d="M30 3.75C15.5039 3.75 3.75 15.5039 3.75 30C3.75 44.4961 15.5039 56.25 30 56.25C44.4961 56.25 56.25 44.4961 56.25 30C56.25 15.5039 44.4961 3.75 30 3.75ZM38.4434 30.4043L25.6465 39.7148C25.5763 39.7653 25.4936 39.7954 25.4075 39.8018C25.3213 39.8083 25.2351 39.7909 25.1582 39.7515C25.0813 39.7122 25.0167 39.6524 24.9716 39.5787C24.9264 39.5051 24.9025 39.4204 24.9023 39.334V20.7246C24.9021 20.638 24.9258 20.5531 24.9708 20.4792C25.0158 20.4052 25.0805 20.3452 25.1575 20.3058C25.2346 20.2664 25.3211 20.249 25.4074 20.2557C25.4937 20.2624 25.5764 20.2929 25.6465 20.3438L38.4434 29.6484C38.5038 29.6912 38.5531 29.7478 38.5872 29.8136C38.6212 29.8794 38.639 29.9523 38.639 30.0264C38.639 30.1004 38.6212 30.1734 38.5872 30.2391C38.5531 30.3049 38.5038 30.3615 38.4434 30.4043Z" stroke="white" />
+                    </svg>
+                </div> :
+                    <div className="h-12 items-center flex">
+                        <svg onClick={pause} className="cursor-pointer active:scale-110 transition-all " width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M30 3.75C15.5039 3.75 3.75 15.5039 3.75 30C3.75 44.4961 15.5039 56.25 30 56.25C44.4961 56.25 56.25 44.4961 56.25 30C56.25 15.5039 44.4961 3.75 30 3.75ZM25.3125 38.9062C25.3125 39.1641 25.1016 39.375 24.8438 39.375H22.0312C21.7734 39.375 21.5625 39.1641 21.5625 38.9062V21.0938C21.5625 20.8359 21.7734 20.625 22.0312 20.625H24.8438C25.1016 20.625 25.3125 20.8359 25.3125 21.0938V38.9062ZM38.4375 38.9062C38.4375 39.1641 38.2266 39.375 37.9688 39.375H35.1562C34.8984 39.375 34.6875 39.1641 34.6875 38.9062V21.0938C34.6875 20.8359 34.8984 20.625 35.1562 20.625H37.9688C38.2266 20.625 38.4375 20.8359 38.4375 21.0938V38.9062Z" fill="white" />
+                        </svg>
+                    </div>}
+                <div className="relative w-12">
+                    <div className="cursor-pointer select-none absolute z-[0] active:scale-110 active:border-2 transition-all text-2xl bg-[#5A20CB] p-2 flex flex-row [&>*]:ml-1 rounded-md border border-white border-solid " onClick={nextStep} ref={nextBtnRef} >Next
+                        <svg width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fillRule="evenodd" clipRule="evenodd" d="M30 2.5C14.8125 2.5 2.5 14.8125 2.5 30C2.5 45.1875 14.8125 57.5 30 57.5C45.1875 57.5 57.5 45.1875 57.5 30C57.5 14.8125 45.1875 2.5 30 2.5ZM25 22C25 21.2625 25.38 20.585 25.99 20.2375C26.2864 20.067 26.6258 19.9857 26.9673 20.0034C27.3088 20.0212 27.6379 20.1372 27.915 20.3375L39.165 28.3375C39.4262 28.5284 39.6381 28.7788 39.7833 29.0679C39.9285 29.357 40.0028 29.6765 40 30C40.0032 30.3239 39.9291 30.6439 39.7839 30.9335C39.6387 31.2231 39.4265 31.4738 39.165 31.665L27.915 39.665C27.6379 39.8653 27.3088 39.9813 26.9673 39.9991C26.6258 40.0168 26.2864 39.9355 25.99 39.765C25.6845 39.5837 25.4322 39.3251 25.2584 39.0152C25.0846 38.7054 24.9955 38.3552 25 38V22Z" fill="white" />
+                        </svg>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    );
+}
+
+export default BubbleSort;

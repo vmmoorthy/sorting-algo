@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { convertToElementType } from "~/helpers";
 import type { ElementType } from "~/types";
 
 
@@ -15,11 +16,11 @@ const useBubbleSort = (arr: number[], isAsc: boolean) => {
 
     useEffect(() => {
         // reset State
-        setValues(() => arr.map(num => ({ value: num, isMarkedForSwap: false, IsSorted: false, isMarkedForCompare: false })))
+        setValues(convertToElementType(arr))
         setFlagI(0)
         setFlagJ(0)
         setIsCompleted(false)
-    }, [isAsc])
+    }, [isAsc, arr])
 
     const nextFunction = (values: ElementType[]) => {
 

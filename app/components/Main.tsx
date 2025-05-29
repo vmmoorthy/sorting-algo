@@ -3,6 +3,14 @@ import { useContext, useRef, useState } from "react";
 import { COLOR_COMPARE, COLOR_SORTED, COLOR_SWAP, COLOR_UNSORTED } from "~/constants";
 import { MainContext } from "~/contextProvider/MainContextProvider";
 import BubbleSort from "./SortAlgos/BubbleSort";
+import InsertionSort from "./SortAlgos/InsertionSort";
+
+const AlgoComponents = {
+  Bubble: BubbleSort,
+  Insertion: InsertionSort,
+  // Selection
+}
+type AlgorithemsType = keyof typeof AlgoComponents
 
 export function Main() {
 
@@ -13,7 +21,7 @@ export function Main() {
   const [isAsc, setIsAsc] = useState(true);
   const [initValues, setInitValues] = useState([45, 5, 6, 65, 52, 82, 12, 2, 100, 24])
 
-  const [algo, setAlgo] = useState("Bubble");
+  const [algo, setAlgo] = useState<AlgorithemsType>("Insertion");
 
   const addElement = () => {
     const val = inputRef.current.value
@@ -23,7 +31,7 @@ export function Main() {
     inputRef.current.focus()
   }
 
-
+  const AlgoComponent = AlgoComponents[algo]
 
 
   return (
@@ -41,13 +49,13 @@ export function Main() {
       <div className="head h-[5rem] flex flex-row justify-between px-16 items-center ">
         <div className="left"><h1 className="text-[2rem] bold text-white select-none" >Values</h1> </div>
         <div className="right text-white grid grid-flow-col gap-5">
-          <div tabIndex={0} className="dropDown cursor-pointer relative [&>.dropList]:focus:visible flex flex-row justify-center items-center bg-[#6A1B4D] rounded py-1 px-2 "><span className="w-24">{algo}</span><svg width="1.5rem" height="1.5rem" viewBox="0 0 40 40" fill="#fff" xmlns="http://www.w3.org/2000/svg">
-            <path d="M32.8281 11.7188H7.17189C6.40235 11.7188 5.97267 12.5313 6.44923 13.0859L19.2774 27.9609C19.6445 28.3867 20.3516 28.3867 20.7227 27.9609L33.5508 13.0859C34.0274 12.5313 33.5977 11.7188 32.8281 11.7188Z" fill="white" />
-          </svg>
-            <div className="dropList invisible z-10 absolute top-[2.2rem] left-0 w-full  flex flex-col justify-center items-center bg-[#6A1B4D] rounded-b-md">
-              <div onClick={() => setAlgo("Bubble")} className="item p-2 hover:scale-105 transition-all ">Bubble</div>
-              <div onClick={() => setAlgo("Insertion")} className="item p-2 hover:scale-105 transition-all ">Insertion</div>
-              <div onClick={() => setAlgo("Selection")} className="item p-2 hover:scale-105 transition-all ">Selection</div>
+          <div tabIndex={0} className="dropDown cursor-pointer relative [&:focus>.dropList]:visible flex flex-row justify-center items-center bg-[#6A1B4D] rounded py-1 px-2 ">
+            <span className="w-24">{algo}</span>
+            <svg width="1.5rem" height="1.5rem" viewBox="0 0 40 40" fill="#fff" xmlns="http://www.w3.org/2000/svg">
+              <path d="M32.8281 11.7188H7.17189C6.40235 11.7188 5.97267 12.5313 6.44923 13.0859L19.2774 27.9609C19.6445 28.3867 20.3516 28.3867 20.7227 27.9609L33.5508 13.0859C34.0274 12.5313 33.5977 11.7188 32.8281 11.7188Z" fill="white" />
+            </svg>
+            <div className="dropList invisible mt-2.5 z-10 absolute top-[2.2rem] left-0 w-full  flex flex-col justify-center items-center bg-[#6A1B4D] rounded-b-md">
+              {(Object.keys(AlgoComponents) as AlgorithemsType[]).map((key, i) => <div key={i} onClick={() => setAlgo(key)} className="w-full hover:bg-[#872463] text-center hover:opacity-100 opacity-85 item p-2 hover:scale-105 transition-transform  duration-300 ease-in-out">{key}</div>)}
             </div>
           </div>
           <div className="grid grid-flow-col gap-2">
@@ -84,7 +92,7 @@ export function Main() {
               <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: COLOR_COMPARE }} ></div><div className="pl-2">To Compare</div>
             </div>
             <div className="wrap grid justify-start w-32 grid-flow-col  text-white text-sm ">
-              <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: COLOR_SWAP }} ></div><div className="pl-2">Just Swaped</div>
+              <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: COLOR_SWAP }} ></div><div className="pl-2">Swap/Move</div>
             </div>
             <div className="wrap grid justify-start w-32 grid-flow-col  text-white text-sm ">
               <div className="colorInfo w-5 h-5 shadow-sm " style={{ backgroundColor: COLOR_UNSORTED }} ></div><div className="pl-2">Unsorted</div>
@@ -119,7 +127,7 @@ export function Main() {
             </svg>
           </div>
         </div>
-        <BubbleSort initValues={initValues} isAsc={isAsc} />
+        <AlgoComponent initValues={initValues} isAsc={isAsc} />
 
       </div>
     </div >

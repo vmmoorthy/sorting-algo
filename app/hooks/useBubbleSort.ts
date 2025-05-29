@@ -8,7 +8,9 @@ const useBubbleSort = (arr: number[], isAsc: boolean) => {
     const [flagI, setFlagI] = useState(0)
     const [flagJ, setFlagJ] = useState(0);
     const [isCompleted, setIsCompleted] = useState(false);
+    const [makeSwap, setMakeSwap] = useState(false);
     const [values, setValues] = useState<ElementType[]>([])
+
 
     useEffect(() => {
         setValues(preValues => preValues.map((val, i) => ({ ...val, isMarkedForCompare: flagJ === i || flagJ + 1 === i })))
@@ -34,16 +36,21 @@ const useBubbleSort = (arr: number[], isAsc: boolean) => {
                 if (isAsc ? values[flagJ].value > values[flagJ + 1].value : values[flagJ].value < values[flagJ + 1].value) {
                     // check for swap flag
                     if (values[flagJ].isMarkedForSwap && values[flagJ + 1].isMarkedForSwap) {// if true then make swap
-                        const temp = values[flagJ]
-                        values[flagJ] = values[flagJ + 1]
-                        values[flagJ + 1] = temp
+                        if (makeSwap) {
+                            const temp = values[flagJ]
+                            values[flagJ] = values[flagJ + 1]
+                            values[flagJ + 1] = temp
 
-                        // reset the swap flag
-                        values[flagJ].isMarkedForSwap = false
-                        values[flagJ + 1].isMarkedForSwap = false
+                            // reset the swap flag
+                            values[flagJ].isMarkedForSwap = false
+                            values[flagJ + 1].isMarkedForSwap = false
 
-                        // move next check
-                        setFlagJ(j => j + 1)
+                            setMakeSwap(false)
+                            // move next check
+                            setFlagJ(j => j + 1)
+                        } else {
+                            setMakeSwap(true)
+                        }
                     } else {
                         values[flagJ].isMarkedForSwap = true
                         values[flagJ + 1].isMarkedForSwap = true
@@ -76,6 +83,7 @@ const useBubbleSort = (arr: number[], isAsc: boolean) => {
         values,
         flagI,
         flagJ,
+        makeSwap,
         nextStep() {
             const updatedValues = nextFunction(values)
             setValues(updatedValues)

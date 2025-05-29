@@ -1,5 +1,6 @@
 import type { Route } from "./+types/home";
 import { Main } from "../components/Main"
+import MainContextProvider from "~/contextProvider/MainContextProvider";
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -9,5 +10,7 @@ export function meta({ }: Route.MetaArgs) {
 }
 
 export default function Home() {
-  return <Main />;
+  return <MainContextProvider>
+    <Main />;
+  </MainContextProvider>
 }

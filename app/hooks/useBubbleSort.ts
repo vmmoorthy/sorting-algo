@@ -11,11 +11,6 @@ const useBubbleSort = (arr: number[], isAsc: boolean) => {
     const [makeSwap, setMakeSwap] = useState(false);
     const [values, setValues] = useState<ElementType[]>([])
 
-
-    useEffect(() => {
-        setValues(preValues => preValues.map((val, i) => ({ ...val, isMarkedForCompare: flagJ === i || flagJ + 1 === i })))
-    }, [flagJ])
-
     useEffect(() => {
         // reset State
         setValues(convertToElementType(arr))
@@ -23,6 +18,12 @@ const useBubbleSort = (arr: number[], isAsc: boolean) => {
         setFlagJ(0)
         setIsCompleted(false)
     }, [isAsc, arr])
+
+
+    useEffect(() => {
+        setValues(preValues => preValues.map((val, i) => ({ ...val, isMarkedForCompare: flagJ === i || flagJ + 1 === i })))
+    }, [flagJ])
+
 
     const nextFunction = (values: ElementType[]) => {
 

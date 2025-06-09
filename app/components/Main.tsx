@@ -4,11 +4,12 @@ import { COLOR_COMPARE, COLOR_SORTED, COLOR_SWAP, COLOR_UNSORTED } from "~/const
 import { MainContext } from "~/contextProvider/MainContextProvider";
 import BubbleSort from "./SortAlgos/BubbleSort";
 import InsertionSort from "./SortAlgos/InsertionSort";
+import SelectionSort from "./SortAlgos/selectionSort";
 
 const AlgoComponents = {
   Bubble: BubbleSort,
   Insertion: InsertionSort,
-  // Selection
+  Selection: SelectionSort
 }
 type AlgorithemsType = keyof typeof AlgoComponents
 
@@ -21,7 +22,7 @@ export function Main() {
   const [isAsc, setIsAsc] = useState(true);
   const [initValues, setInitValues] = useState([45, 5, 6, 65, 52, 82, 12, 2, 100, 24])
 
-  const [algo, setAlgo] = useState<AlgorithemsType>("Insertion");
+  const [algo, setAlgo] = useState<AlgorithemsType>("Selection");
 
   const addElement = () => {
     const val = inputRef.current.value

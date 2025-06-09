@@ -12,16 +12,17 @@ const useInsertionSort = (arr: number[], isAsc: boolean) => {
     const [values, setValues] = useState<ElementType[]>(() => convertToElementType(arr))
 
     useEffect(() => {
-        setValues(preValues => preValues.map((val, i) => ({ ...val, isMarkedForCompare: values.length - 1 == i ? false : flagJ === i || flagI === i })))
-    }, [flagJ])
-
-    useEffect(() => {
         // reset State
         setValues(convertToElementType(arr))
         setFlagI(1)
         // flagJ will be reset by useEffect
         setIsCompleted(false)
     }, [isAsc, arr])
+
+    useEffect(() => {
+        setValues(preValues => preValues.map((val, i) => ({ ...val, isMarkedForCompare: values.length - 1 == i ? false : flagJ === i || flagI === i })))
+    }, [flagJ])
+
 
     useEffect(() => {
         setFlagJ(flagI - 1)

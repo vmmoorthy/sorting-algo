@@ -51,24 +51,18 @@ const InsertionSort = ({ initValues, isAsc, }: { initValues: number[], isAsc: bo
         totalEleHeight += arrowRef.current.p1.offsetHeight
         totalEleHeight += parseFloat(eleStyle.marginTop)
     }
-    console.log(p1Index, p2Index, sondSlice)
 
-    console.log(totalEleHeight)
     return (
         <div className="pageRender  h-full p-2 px-10 text-white">
             <div className="content h-[75vh] overflow-auto relative ">{values.map((element, index) => {
                 let props = { transform: "", };
                 const { p1, p2 } = arrowRef.current;
-                // let p2Index = -1;
                 if (element.isMarkedForSwap && p1 && p2) {
                     let pv = p2.offsetTop - p1.offsetTop
-                    console.log("p:", p1, p1.innerText, pv, "p2:", p2, p2.innerText)
-                    // p2Index = index;
+
                     if (makeSwap) {
                         if (p1Index !== index) {//p2
-                            // .getBoundingClientRect().y
                             props.transform = `translateY(${-pv}px)`
-                            // else //p1
                         }
                     }
                 }

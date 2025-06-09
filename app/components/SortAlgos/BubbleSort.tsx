@@ -34,7 +34,7 @@ const BubbleSort = ({ initValues, isAsc, }: { initValues: number[], isAsc: boole
                 audioMarkRef.current.play()
         }
         else {
-            audioClickRef.current.play()
+            audioClickRef.current.play().catch(() => { })
         }
     }, [values])
 

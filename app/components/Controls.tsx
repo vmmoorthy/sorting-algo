@@ -2,13 +2,12 @@ import { useContext } from "react";
 import { MainContext } from "~/contextProvider/MainContextProvider";
 
 const Controls = ({ nextStep }: { nextStep: () => void }) => {
-    const { onPlay, play, pause, nextBtnRef } = useContext(MainContext)
-    return (<div className="footer mt-5 grid grid-flow-col justify-evenly ">
+    const { onPlay, play, pause, nextBtnRef, playSpeed, setPlaySpeed } = useContext(MainContext)
+    return (<div className="footer absolute md:relative bg-[#242B2E] bottom-[0] left-[50%] translate-x-[-50%] w-[100%] mx-auto pt-5 flex flex-row justify-evenly ">
         {/* previous */}
         {/* <svg className="cursor-pointer active:scale-110 transition-all " width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path fillRule="evenodd" clipRule="evenodd" d="M30 2.5C14.8125 2.5 2.5 14.8125 2.5 30C2.5 45.1875 14.8125 57.5 30 57.5C45.1875 57.5 57.5 45.1875 57.5 30C57.5 14.8125 45.1875 2.5 30 2.5ZM35 22C35.0041 21.6452 34.9148 21.2956 34.741 20.9862C34.5672 20.6768 34.3151 20.4186 34.01 20.2375C33.7136 20.067 33.3742 19.9857 33.0327 20.0034C32.6912 20.0212 32.3621 20.1372 32.085 20.3375L20.835 28.3375C20.5738 28.5284 20.3619 28.7788 20.2167 29.0679C20.0715 29.357 19.9972 29.6765 20 30C20 30.67 20.3125 31.2925 20.835 31.665L32.085 39.665C32.3621 39.8653 32.6912 39.9813 33.0327 39.9991C33.3742 40.0168 33.7136 39.9355 34.01 39.765C34.3155 39.5837 34.5678 39.3251 34.7416 39.0152C34.9154 38.7054 35.0045 38.3552 35 38V22Z" fill="white" />
         </svg> */}
-
         {!onPlay ? <div className="h-12 items-center flex">
             <svg onClick={play} className="cursor-pointer active:scale-110 transition-all " width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect width="60" height="60" rx="30" fill="white" />
@@ -21,7 +20,11 @@ const Controls = ({ nextStep }: { nextStep: () => void }) => {
                     <path d="M30 3.75C15.5039 3.75 3.75 15.5039 3.75 30C3.75 44.4961 15.5039 56.25 30 56.25C44.4961 56.25 56.25 44.4961 56.25 30C56.25 15.5039 44.4961 3.75 30 3.75ZM25.3125 38.9062C25.3125 39.1641 25.1016 39.375 24.8438 39.375H22.0312C21.7734 39.375 21.5625 39.1641 21.5625 38.9062V21.0938C21.5625 20.8359 21.7734 20.625 22.0312 20.625H24.8438C25.1016 20.625 25.3125 20.8359 25.3125 21.0938V38.9062ZM38.4375 38.9062C38.4375 39.1641 38.2266 39.375 37.9688 39.375H35.1562C34.8984 39.375 34.6875 39.1641 34.6875 38.9062V21.0938C34.6875 20.8359 34.8984 20.625 35.1562 20.625H37.9688C38.2266 20.625 38.4375 20.8359 38.4375 21.0938V38.9062Z" fill="white" />
                 </svg>
             </div>}
-        <div className="relative w-12">
+        <div className="flex flex-col">
+            <label className="min-w-28" htmlFor="playSpeed">Speed: {100 - Math.round((playSpeed - 200) / (3000 - 200) * 100)}%</label>
+            <input type="range" id="playSpeed" min={200} step={200} max={3000} value={playSpeed} onChange={e => { pause(); setPlaySpeed(Number(e.target.value)); }} className=" rounded min-w-[2rem] max-w-[5rem] w-fit border border-solid border-white p-1  bg-[#6A1B4D]" />
+        </div>
+        <div className="relative w-[30%] md:w-12">
             <div className="cursor-pointer select-none absolute z-[0] active:scale-110 active:border-2 transition-all text-2xl bg-[#5A20CB] p-2 flex flex-row [&>*]:ml-1 rounded-md border border-white border-solid " onClick={nextStep} ref={nextBtnRef} >Next
                 <svg width="2rem" height="2rem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path fillRule="evenodd" clipRule="evenodd" d="M30 2.5C14.8125 2.5 2.5 14.8125 2.5 30C2.5 45.1875 14.8125 57.5 30 57.5C45.1875 57.5 57.5 45.1875 57.5 30C57.5 14.8125 45.1875 2.5 30 2.5ZM25 22C25 21.2625 25.38 20.585 25.99 20.2375C26.2864 20.067 26.6258 19.9857 26.9673 20.0034C27.3088 20.0212 27.6379 20.1372 27.915 20.3375L39.165 28.3375C39.4262 28.5284 39.6381 28.7788 39.7833 29.0679C39.9285 29.357 40.0028 29.6765 40 30C40.0032 30.3239 39.9291 30.6439 39.7839 30.9335C39.6387 31.2231 39.4265 31.4738 39.165 31.665L27.915 39.665C27.6379 39.8653 27.3088 39.9813 26.9673 39.9991C26.6258 40.0168 26.2864 39.9355 25.99 39.765C25.6845 39.5837 25.4322 39.3251 25.2584 39.0152C25.0846 38.7054 24.9955 38.3552 25 38V22Z" fill="white" />

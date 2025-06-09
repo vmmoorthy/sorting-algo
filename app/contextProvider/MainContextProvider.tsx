@@ -7,10 +7,12 @@ type ContextType = {
     sortCompleted: boolean
     setSortCompleted: React.Dispatch<React.SetStateAction<boolean>>
     setIsMuted: React.Dispatch<React.SetStateAction<boolean>>
+    setPlaySpeed: React.Dispatch<React.SetStateAction<number>>
     pause: () => void
     play: () => void
     onPlay: boolean
     isMuted: boolean
+    playSpeed: number
     audioClickRef: React.RefObject<HTMLAudioElement>
     audioTransRef: React.RefObject<HTMLAudioElement>
     audioMarkRef: React.RefObject<HTMLAudioElement>
@@ -18,24 +20,26 @@ type ContextType = {
 }
 
 export const MainContext = createContext<ContextType>({
-    setSortCompleted: (() => { }) as React.Dispatch<React.SetStateAction<boolean>>,
+    setSortCompleted: (() => { }),
     sortCompleted: false,
     onPlay: false,
     isMuted: false,
-    setIsMuted: (() => { }) as React.Dispatch<React.SetStateAction<boolean>>,
+    setIsMuted: (() => { }),
     pause: () => { },
     play: () => { },
     audioTransRef: null as never as React.RefObject<HTMLAudioElement>,
     audioClickRef: null as never as React.RefObject<HTMLAudioElement>,
     audioMarkRef: null as never as React.RefObject<HTMLAudioElement>,
     nextBtnRef: null as never as React.RefObject<HTMLDivElement>,
-
+    playSpeed: 600,
+    setPlaySpeed: (() => { })
 })
 const MainContextProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
     const [sortCompleted, setSortCompleted] = useState(false);
     const playTimeRef = useRef<NodeJS.Timeout>(-1 as never as NodeJS.Timeout)
     const nextBtnRef = useRef<HTMLDivElement>(null as never as HTMLDivElement)
     const [onPlay, setOnPlay] = useState(false);
+    const [playSpeed, setPlaySpeed] = useState(600);
 
     const [isMuted, setIsMuted] = useState(false);
 
@@ -44,7 +48,7 @@ const MainContextProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
     const audioMarkRef = useRef<HTMLAudioElement>(null as never as HTMLAudioElement)
 
     const play = () => {
-        const pl = setInterval(() => nextBtnRef.current.click(), 100)
+        const pl = setInterval(() => nextBtnRef.current.click(), playSpeed)
         playTimeRef.current = pl
         setOnPlay(true)
     }
@@ -62,7 +66,7 @@ const MainContextProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
 
 
     return (
-        <MainContext.Provider value={{ sortCompleted, setSortCompleted, nextBtnRef, isMuted, setIsMuted, onPlay, play, pause, audioClickRef, audioTransRef, audioMarkRef }}>
+        <MainContext.Provider value={{ playSpeed, setPlaySpeed, sortCompleted, setSortCompleted, nextBtnRef, isMuted, setIsMuted, onPlay, play, pause, audioClickRef, audioTransRef, audioMarkRef }}>
             <audio muted={isMuted} src={click} hidden ref={audioClickRef} ></audio>
             <audio muted={isMuted} src={trans} hidden ref={audioTransRef} ></audio>
             <audio muted={isMuted} src={mark} hidden ref={audioMarkRef} ></audio>

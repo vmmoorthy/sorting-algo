@@ -35,10 +35,7 @@ const SelectionSort = ({ initValues, isAsc, }: { initValues: number[], isAsc: bo
                 audioMarkRef.current.play()
         }
         else {
-            audioClickRef.current.play().catch(res => {
-                // console.log(res)
-            })
-
+            audioClickRef.current.play()
         }
     }, [values])
 
@@ -61,16 +58,12 @@ const SelectionSort = ({ initValues, isAsc, }: { initValues: number[], isAsc: bo
             <div className="content h-[75vh] overflow-auto relative ">{values.map((element, index) => {
                 let props = { transform: "", };
                 const { p1, p2 } = arrowRef.current;
-                // let p2Index = -1;
                 if (element.isMarkedForSwap && p1 && p2) {
                     let pv = p2.offsetTop - p1.offsetTop
-                    console.log("p:", p1, p1.innerText, pv, "p2:", p2, p2.innerText)
-                    // p2Index = index;
+
                     if (makeSwap) {
                         if (p1Index !== index) {//p2
-                            // .getBoundingClientRect().y
                             props.transform = `translateY(${-pv}px)`
-                            // else //p1
                         }
                     }
                 }

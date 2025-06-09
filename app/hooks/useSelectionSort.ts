@@ -58,10 +58,7 @@ const useSelectionSort = (arr: number[], isAsc: boolean) => {
 
         // Step 2: End of inner loop, check if swap needed
         if (flagJ === values.length) {
-            if (smallIdx !== flagI) {
-                // Mark for swap
-                values[flagI].isMarkedForSwap = true
-                values[smallIdx].isMarkedForSwap = true
+            if (values[flagI].isMarkedForSwap && values[smallIdx].isMarkedForSwap) {
                 if (makeSwap) {
                     // Do swap
                     values[flagI].isMarkedForSwap = false
@@ -75,14 +72,23 @@ const useSelectionSort = (arr: number[], isAsc: boolean) => {
                     setFlagJ(flagI + 1)
                     setSmallIdx(flagI)
                 } else {
+                    // Mark for swap
+
                     setMakeSwap(true)
                 }
+            }
+            else if (smallIdx !== flagI) {
+
+                values[flagI].isMarkedForSwap = true
+                values[smallIdx].isMarkedForSwap = true
+
             } else {
                 // No swap needed, move to next
                 setFlagI(i => i + 1)
                 setFlagJ(flagI + 1)
                 setSmallIdx(flagI)
             }
+
         }
 
         return [...values]
